@@ -8,8 +8,8 @@ int main () {
 //     get ("cl2", &r);
     
     int i = 5;
-    char cadena [7] = "patata3";
-    int n = 1000;
+    char cadena [7] = "patata2";
+    int n = 6;
         
     printf("Crear vector \n");
     int error = init(cadena, n);
@@ -17,15 +17,16 @@ int main () {
     
     error = set(cadena, i, 5);
     printf("%d \n", error);
-        
+    
     int patata = 0;
-    for(;;){
-        error = get(cadena, i, &patata);
-        printf("%d, %d \n", error, patata);
-    }
+    error = get(cadena, i, &patata);
+    printf("%d, %d \n", error, patata);
     
-    
+    printf("%d \n", error);
+
+
     
 //     detalles de uso
     return 0;
 }
+ 

@@ -1,31 +1,17 @@
-BIN_FILES  = prueba cliente servidor
+.PHONY: all clean compileServer createDynamicLib compileClient
 
-CC = gcc
-
-
-CFLAGS =	-Wall  -g
-
-LDFLAGS = -L$(INSTALL_PATH)/lib/
-LDLIBS = -lpthread
-
-
-all: $(BIN_FILES)
-.PHONY : all
-
-prueba: prueba.o lines.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
-
-cliente: cliente.o lines.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
-
-servidor: servidor.o lines.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
-
-%.o: %.c
-	$(CC) $(CFLAGS) $(CFLAGS) -c $<
+all: clean compileServer createDynamicLib compileClient
 
 clean:
-	rm -f $(BIN_FILES) *.o
+	rm -f *.o *.so
+	
+compileServer:
+	gcc -o servidor servidor.c implementacion.c array.c lista.c -lrt -lpthread
 
-.SUFFIXES:
-.PHONY : clean
+createDynamicLib:
+	gcc -Wall -fPIC -c -lrt array.c
+	ld -o libarray.so array.o -shared
+	
+
+compileClient:
+	gcc -Wall -o cliente cliente.c -L. libarray.so -lrt
