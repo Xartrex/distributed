@@ -6,7 +6,7 @@
 
 TipoLista lista = NULL;
 
-//pthread_mutex_t mutex_lista;
+pthread_mutex_t mutex_lista;
 //int acceso_lista = 0;
 //pthread_cond_t cond_mensaje;
 //pthread_cond_signal(&cond_mensaje);
@@ -22,9 +22,9 @@ void *inita(void *pet){
     }
     
     //No tiene que haber mutex aquí
-    //pthread_mutex_lock(&mutex_lista);
+    pthread_mutex_lock(&mutex_lista);
     cod_error = insertar(&lista, a->clave, a->n); //Preguntar paso direccion array
-    //pthread_mutex_unlock(&mutex_lista);
+    pthread_mutex_unlock(&mutex_lista);
     
     ress.cod_error = cod_error;
     
@@ -56,9 +56,9 @@ void *seta(void *pet){
     }
     
     //No tiene que haber mutex aquí
-    //pthread_mutex_lock(&mutex_lista);
+    pthread_mutex_lock(&mutex_lista);
     cod_error = meter(&lista, a->clave, a->n, a->valor);
-    //pthread_mutex_unlock(&mutex_lista);
+    pthread_mutex_unlock(&mutex_lista);
     
     ress.cod_error = cod_error;
     int checkSend = mq_send(cc, (const char*) &ress, sizeof(ress), 0); //Se envía la cola
@@ -87,9 +87,9 @@ void *geta(void *pet){
         perror("GETA: Ha ocurrido un error al crear la cola del cliente \n");
     }
     
-    //pthread_mutex_lock(&mutex_lista);
+    pthread_mutex_lock(&mutex_lista);
     valor = recuperar(&lista, a->clave, a->n);
-    //pthread_mutex_unlock(&mutex_lista);
+    pthread_mutex_unlock(&mutex_lista);
 
     if(valor == -1){
         cod_error = -1;
@@ -123,9 +123,9 @@ void *freea(void *pet){
         perror("FREEA: Ha ocurrido un error al crear la cola del cliente \n");
     }
     
-    //pthread_mutex_lock(&mutex_lista);
+    pthread_mutex_lock(&mutex_lista);
     cod_error = liberar(&lista, a->clave);
-    //pthread_mutex_unlock(&mutex_lista);
+    pthread_mutex_unlock(&mutex_lista);
 
     ress.cod_error = cod_error;
     

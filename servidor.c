@@ -7,7 +7,9 @@
 #include <mqueue.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
+#include <signal.h>
 #include "mensaje.h"
 #include "implementacion.h"
 
@@ -39,6 +41,10 @@ void tratar_peticion(struct peticion *a){
     }
 }
 
+volatile sig_atomic_t stop;
+void inthand(int signum) {
+    stop = 1;
+}
 
 int main(){
 
@@ -49,7 +55,6 @@ int main(){
     q_attr.mq_maxmsg = 10;
     q_attr.mq_msgsize = sizeof(struct peticion);
  
-    
     q_servidor = mq_open ("/SERVIDOR", O_CREAT|O_RDONLY, 0777, &q_attr);
     if(q_servidor == -1){
         perror("No se puede crear la cola de servidor");
@@ -62,7 +67,8 @@ int main(){
     
     pthread_attr_setdetachstate(&t_attr, PTHREAD_CREATE_DETACHED);
     
-    while(true){
+    signal(SIGINT, inthand);
+    while(!stop){
         int e = mq_receive(q_servidor, (char *) &mess, sizeof(struct peticion),0);
         if (e == -1) {
             perror("Ha ocurrido un error al recibir de la cola del cliente \n");
@@ -75,12 +81,14 @@ int main(){
         }
         
         tratar_peticion(&mess);
-        
+        //pthread_mutex_lock(&mutex_mensaje);
         while (mensaje_no_copiado = 0){
             pthread_cond_wait(&cond_mensaje, &mutex_mensaje);
         }
+        //pthread_mutex_unlock(&mutex_mensaje);
         mensaje_no_copiado = 0;
     }
+    printf("Servidor parado");
 
     if (mq_close(q_servidor) == -1) {
         perror("Ha ocurrido un error al cerrar la cola del servidor");
@@ -90,6 +98,7 @@ int main(){
         perror("Ha ocurrido un error al desvincular la cola del servidor");
         return (-1);
     }
+    exit(0);
 
 }
 

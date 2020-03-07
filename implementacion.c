@@ -12,8 +12,16 @@ struct elementoLista{
 
 
 int insertar(TipoLista *l, char *nombre, int elementos){
-    TipoLista p1, p2;
+    TipoLista p1, p2, lista;
     p1 = *l;
+    lista = *l;
+    
+//     while (lista != NULL) {
+//         if(strcmp(lista->nombre, nombre) == 0){
+//             return (-1);
+//         }
+//     }
+    
     if (p1 == NULL){
         p1 = (struct elementoLista *)malloc(sizeof(struct elementoLista));
         strncpy(p1->nombre, nombre, 1024);
