@@ -16,13 +16,12 @@ public class cliente
 		//DatagramPacket out = null;
 		int res;
 		int num[] = new int[2];
-		System.out.println("PATATA");
 
-		//if (args.length != 2)
-		//{
-			//System.out.println("Uso: cliente <host> <puerto>");
-			//System.exit(0);
-		//}
+		if (args.length != 2)
+		{
+			System.out.println("Uso: cliente <host> <dest_port>");
+			System.exit(0);
+		}
 
 		try
 		{
@@ -30,9 +29,13 @@ public class cliente
 			// incluir el código aqui
 
 			// se crea el socket del cliente
-			Socket sc = new Socket("localhost", 2800);
+			for(int i=0; i<args.length;i++){
+				System.out.println("Arg "+ i+ ": " +args[i]);
+			}
+			int dir = Integer.parseInt(args[1]);
+			Socket sc = new Socket(args[0], dir);
 			// direción del servidor
-			server_addr = InetAddress.getByName("localhost");
+			server_addr = InetAddress.getByName(args[1]);
 
 			InputStreamReader is = new InputStreamReader(System.in);
 			BufferedReader br = new BufferedReader(is);
@@ -42,8 +45,15 @@ public class cliente
 
 			while (!hecho) {
 				// completar el código para comunicar con el servidor
-				System.out.println("Escriba algo");
-				mensaje = new String("Hola");
+				//System.out.println("Escriba algo");
+
+				//mensaje = new String("Hola");
+			
+				Scanner scan = new Scanner(System.in);
+			
+				// entrada de una cadena
+			        mensaje = scan.nextLine();
+			
 
 				DataOutputStream out = new DataOutputStream(sc.getOutputStream());
 
