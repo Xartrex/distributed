@@ -45,21 +45,18 @@ public class cliente
 
 			while (!hecho) {
 				// completar el código para comunicar con el servidor
-				//System.out.println("Escriba algo");
-
-				//mensaje = new String("Hola");
-			
 				Scanner scan = new Scanner(System.in);
 			
 				// entrada de una cadena
 			        mensaje = scan.nextLine();
-			
-
+				if(mensaje.compareToIgnoreCase("EXIT")==0){
+					break;
+				}
 				DataOutputStream out = new DataOutputStream(sc.getOutputStream());
-
+		
 				out.writeBytes(mensaje);
 				out.write('\0'); // inserta el código ASCII 0 al final
-
+/*
 				DataInputStream in = new DataInputStream(sc.getInputStream());
 				byte[] ch = new byte[1];
 				String mensajeR = new String();
@@ -76,7 +73,7 @@ public class cliente
 				//mensajeR = br.readLine();
 
 				System.out.println(mensajeR);
-
+*/
 			}
 
 		}
