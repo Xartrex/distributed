@@ -15,7 +15,7 @@ int main () {
     int error = init(cadena, n);
     printf("%d \n", error);
     
-    error = set(cadena, i, 5);
+    error = set(cadena, i, 3);
     printf("%d \n", error);
         
     int patata = 0;

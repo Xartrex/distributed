@@ -10,17 +10,20 @@ struct elementoLista{
     struct elementoLista *enlace;
 };
 
-
 int insertar(TipoLista *l, char *nombre, int elementos){
     TipoLista p1, p2, lista;
+    
     p1 = *l;
     lista = *l;
     
-//     while (lista != NULL) {
-//         if(strcmp(lista->nombre, nombre) == 0){
-//             return (-1);
-//         }
-//     }
+     while (lista != NULL) {
+         if(strcmp(lista->nombre, nombre) == 0){
+             return (-1);
+         }else{
+             lista=lista->enlace;
+         }
+     }
+    
     
     if (p1 == NULL){
         p1 = (struct elementoLista *)malloc(sizeof(struct elementoLista));
@@ -46,6 +49,7 @@ int insertar(TipoLista *l, char *nombre, int elementos){
 
 int recuperar(TipoLista *l, char *name, int n){
     TipoLista lista;
+        
     lista = *l;
     while (lista != NULL) {
         if(strcmp(lista->nombre, name) == 0){
@@ -71,12 +75,13 @@ int meter(TipoLista *l, char *name, int n, int valor){
     while (lista != NULL) {
         if(strcmp(lista->nombre, name) == 0){
             if(n < lista->elementos && (n) >= 0){
+                 printf("\n patata\n");
                  lista->direccion[n] = valor;
+                 printf("\n patata2\n");
                  return 0;
                  break;
             } else {
-                perror("Error al recuperar, fuera de rango");
-                
+                perror("Error al meter, fuera de rango");
                 return -1;
             }
         } else {

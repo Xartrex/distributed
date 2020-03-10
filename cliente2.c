@@ -19,9 +19,17 @@ int main () {
     printf("%d \n", error);
     
     int patata = 0;
-    error = get(cadena, i, &patata);
-    printf("%d, %d \n", error, patata);
+    //error = get(cadena, i, &patata);
+    //printf("%d, %d \n", error, patata);
     
+    /*for(;;){
+        error = get(cadena, i, &patata);
+        printf("%d, %d \n", error, patata);
+        printf("A");
+        printf("B");
+    }*/
+    error = get(cadena, i, &patata);
+        printf("%d, %d \n", error, patata);
     printf("%d \n", error);
 
 

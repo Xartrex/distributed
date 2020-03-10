@@ -28,17 +28,18 @@ void tratar_peticion(struct peticion *a){
 
     //Dependiendo del código de operación se realiza una función u otra
     if(mess.operacion == 0){
-        pthread_create(&thid, &t_attr, inita, &mess);
+        inita(&mess);
     }
     if(mess.operacion == 1){
-        pthread_create(&thid, &t_attr, seta, &mess);
+        seta(&mess);
     }
     if(mess.operacion == 2){
-        pthread_create(&thid, &t_attr, geta, &mess);
+        geta(&mess);
     }
     if(mess.operacion == 3){
-        pthread_create(&thid, &t_attr, freea, &mess);
+        freea(&mess);
     }
+   pthread_exit(0);
 }
 
 volatile sig_atomic_t stop;
@@ -60,6 +61,7 @@ int main(){
         perror("No se puede crear la cola de servidor");
         return 1;
     }
+    inicializarpatata();
     
     pthread_mutex_init(&mutex_mensaje, NULL);
     pthread_cond_init(&cond_mensaje, NULL);
@@ -80,13 +82,19 @@ int main(){
             }
         }
         
-        tratar_peticion(&mess);
-        //pthread_mutex_lock(&mutex_mensaje);
-        while (mensaje_no_copiado = 0){
-            pthread_cond_wait(&cond_mensaje, &mutex_mensaje);
+    
+        
+        
+        if(pthread_create(&thid, &t_attr, tratar_peticion, &mess)==0){
+            pthread_mutex_lock(&mutex_mensaje);
+            while (mensaje_no_copiado == 0){
+                pthread_cond_wait(&cond_mensaje, &mutex_mensaje);
+            }
+            pthread_mutex_unlock(&mutex_mensaje);
+            mensaje_no_copiado = 0;
         }
-        //pthread_mutex_unlock(&mutex_mensaje);
-        mensaje_no_copiado = 0;
+        
+      
     }
     printf("Servidor parado");
 

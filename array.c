@@ -108,7 +108,7 @@ int set (char *clave, int i, int valor) {
         perror("SET: Ha ocurrido un error al crear la cola del servidor \n");
     }
     
-    p.operacion = 1; //Definido en servidor.c
+    p.operacion = 1;
     strcpy(p.clave, clave);
     strcpy(p.cola_cliente, nombrecola);
     p.n = i;
