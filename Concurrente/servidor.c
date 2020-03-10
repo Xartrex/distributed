@@ -50,6 +50,7 @@ void tratar_peticion (int *s) {
         }
         
     }
+    printf("Cerrando la conexion\n");
     close(s_local);
     pthread_exit(NULL);
 }
@@ -92,6 +93,8 @@ int main(int argc, char *argv[]) {
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     
     for (;;) {
+	printf("Esperando conexión\n");
+
         newsd = accept(sd, (struct sockaddr*) &client_addr, &size);
         if (newsd < 0) {
             printf("Error en el accept");

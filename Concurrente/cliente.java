@@ -12,7 +12,7 @@ public class cliente
 		byte brecv[] = new byte[100];
 
 		InetAddress server_addr = null;
-		DatagramSocket s = null;
+		//DatagramSocket s = null;
 		//DatagramPacket out = null;
 		int res;
 		int num[] = new int[2];
@@ -49,13 +49,13 @@ public class cliente
 			
 				// entrada de una cadena
 			        mensaje = scan.nextLine();
-				if(mensaje.compareToIgnoreCase("EXIT")==0){
-					break;
-				}
+				
 				DataOutputStream out = new DataOutputStream(sc.getOutputStream());
 		
 				out.writeBytes(mensaje);
 				out.write('\0'); // inserta el código ASCII 0 al final
+				if(mensaje.equals("EXIT")==true)
+					break;
 /*
 				DataInputStream in = new DataInputStream(sc.getInputStream());
 				byte[] ch = new byte[1];

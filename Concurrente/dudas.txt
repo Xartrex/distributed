@@ -1,2 +1,1 @@
 ctrl + c cierra el server
-evitar que se repita el mensaje enviado en el cliente
