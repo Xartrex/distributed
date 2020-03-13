@@ -39,7 +39,7 @@ void tratar_peticion(struct peticion *a){
     if(mess.operacion == 3){
         freea(&mess);
     }
-   pthread_exit(0);
+    pthread_exit(0);
 }
 
 volatile sig_atomic_t stop;
@@ -61,7 +61,7 @@ int main(){
         perror("No se puede crear la cola de servidor");
         return 1;
     }
-    inicializarpatata();
+    inicializar();
     
     pthread_mutex_init(&mutex_mensaje, NULL);
     pthread_cond_init(&cond_mensaje, NULL);
@@ -81,9 +81,6 @@ int main(){
                 perror("Ha ocurrido un error al desvincular la cola del servidor");
             }
         }
-        
-    
-        
         
         if(pthread_create(&thid, &t_attr, tratar_peticion, &mess)==0){
             pthread_mutex_lock(&mutex_mensaje);

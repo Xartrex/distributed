@@ -8,8 +8,8 @@ TipoLista lista = NULL;
 
 pthread_mutex_t mutex_lista;
 
-void inicializarpatata(){
-        pthread_mutex_init(&mutex_lista, NULL);
+void inicializar(){
+    pthread_mutex_init(&mutex_lista, NULL);
 }
 
 void *inita(void *pet){
@@ -48,7 +48,6 @@ void *seta(void *pet){
     struct peticion* a = (struct peticion*) pet;
     struct respuesta ress;
     int cod_error = 0;
-    printf("REPATATA");
     mqd_t cc = mq_open(a->cola_cliente, O_WRONLY); //Se crea la cola del cliente
     if(cc == -1) {
         perror("SETA: Ha ocurrido un error al crear la cola del cliente \n");

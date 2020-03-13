@@ -22,6 +22,6 @@ void *inita(void *pet);
 void *seta(void *pet); //clave es un string asociada a un int
 void *geta(void *pet);
 void *freea(void *pet);
-void inicializarpatata();
+void inicializar();
 
 #endif

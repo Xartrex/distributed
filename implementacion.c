@@ -56,17 +56,18 @@ int recuperar(TipoLista *l, char *name, int n){
             if(n < lista->elementos && (n) >= 0){
                  int valor;
                  valor = lista->direccion[n];
-                 return valor; //como conio conseguir el struct resspuesta jaja saludos
+                 return valor;
                  break;
             } else {
                 perror("Error al recuperar, fuera de rango");
-                return -1;
+                //return -1;
             }
         } else {
             lista = lista->enlace;
         }
     }
-    return -1;
+    perror("Error al recuperar");
+    //return -1;
 }
 
 int meter(TipoLista *l, char *name, int n, int valor){
@@ -75,9 +76,7 @@ int meter(TipoLista *l, char *name, int n, int valor){
     while (lista != NULL) {
         if(strcmp(lista->nombre, name) == 0){
             if(n < lista->elementos && (n) >= 0){
-                 printf("\n patata\n");
                  lista->direccion[n] = valor;
-                 printf("\n patata2\n");
                  return 0;
                  break;
             } else {

@@ -162,17 +162,13 @@ int destroy(char* clave) {
     struct peticion p;
     struct respuesta r;
     char nombrecola[128];
-    //char nombrerespuesta[128];
     sprintf(nombrecola,"/micola-%d", getpid());
-    //sprintf(nombrerespuesta,"/mi cola2- %d", getpid());
     
     struct mq_attr q_attr;
     
     q_attr.mq_maxmsg = 10;
     q_attr.mq_msgsize = sizeof(r);
-    
-    printf("DESTROY: Inicializar colas\n");
-    
+        
     mqd_t cc = mq_open(nombrecola, O_CREAT|O_RDONLY, 0777, &q_attr);  //Se crea la cola del cliente
     if(cc == -1) {
         perror("DESTROY: Ha ocurrido un error al crear la cola del cliente \n");
@@ -186,7 +182,6 @@ int destroy(char* clave) {
     p.operacion = 3; //Definido en servidor.c
     strcpy(p.clave, clave);
     strcpy(p.cola_cliente, nombrecola);
-    //strcpy(p.cola_respuesta, nombrerespuesta);
     
     int checkSend = mq_send(cs, (const char*) &p, sizeof(p), 0);    //Se envía la cola del servidor
     if(checkSend == -1){
