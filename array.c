@@ -26,11 +26,13 @@ int get (char *clave, int i, int *valor) {
     mqd_t cc = mq_open(nombrecola, O_CREAT|O_RDONLY, 0777, &q_attr);  //Se crea la cola del cliente
     if(cc == -1) {
         perror("GET: Ha ocurrido un error al crear la cola del cliente \n");
+        return -1;
     }
     
     mqd_t cs = mq_open("/SERVIDOR", O_WRONLY);    //Se crea la cola del servidor
     if(cs == -1) {
         perror("GET: Ha ocurrido un error al crear la cola del servidor \n");
+        return -1;
     }
     
     p.operacion = 2; //Definido en servidor.c
@@ -69,15 +71,24 @@ int get (char *clave, int i, int *valor) {
         return(-1);
     }
     
-    *valor = r.valor;
+    if (r.cod_error == -1) {
+        *valor = -1;
+        return -1;
+    } else {
+        *valor = r.valor;
+    }
+    
     if (mq_close(cc) == -1) {
         perror("GET: Error al cerrar la cola del cliente");
+        return -1;
     }
     if (mq_close(cs) == -1) {
         perror("GET: Error al cerrar la cola del servidor");
+        return -1;
     }
     if (mq_unlink(nombrecola) == -1) {
         perror("GET: Error al desvincular la cola");
+        return -1;
     }
     
     return r.cod_error;

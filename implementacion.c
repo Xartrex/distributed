@@ -47,27 +47,28 @@ int insertar(TipoLista *l, char *nombre, int elementos){
 }
 
 
-int recuperar(TipoLista *l, char *name, int n){
+int recuperar(TipoLista *l, char *name, int n, int *err){
     TipoLista lista;
         
     lista = *l;
     while (lista != NULL) {
         if(strcmp(lista->nombre, name) == 0){
             if(n < lista->elementos && (n) >= 0){
-                 int valor;
-                 valor = lista->direccion[n];
-                 return valor;
-                 break;
+                int valor;
+                valor = lista->direccion[n];
+                return valor;
+                break;
             } else {
                 perror("Error al recuperar, fuera de rango");
-                //return -1;
+                *err = -1;
+                break;
             }
         } else {
             lista = lista->enlace;
         }
     }
     perror("Error al recuperar");
-    //return -1;
+    *err = -1;
 }
 
 int meter(TipoLista *l, char *name, int n, int valor){

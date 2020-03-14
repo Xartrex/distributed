@@ -15,3 +15,4 @@ createDynamicLib:
 
 compileClient:
 	gcc -Wall -o cliente cliente.c -L. libarray.so -lrt
+	gcc -Wall -o cliente2 cliente2.c -L. libarray.so -lrt

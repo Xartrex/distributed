@@ -31,8 +31,24 @@ int main () {
     } else {
         printf("Error al añadir un elemento al vector\n");
     }
+    
+    error = set(cadena, 1001, 3);
+    printf("%d \n", error);
+    if (error == 0){
+        printf("Error no detectado\n");
+    } else {
+        printf("Error detectado correctamente\n");
+    }
         
     int patata = 0;
+    error = get(cadena, 1001, &patata);
+    printf("%d \n", error);
+    if (error == -1){
+        printf("Error detectado correctamente\n");
+    } else {
+        printf("Error no detectado\n");
+    }
+    
     for(int j = 0; j <= 30000; j++){
         error = get(cadena, i, &patata);
         printf("%d, %d \n", error, patata);

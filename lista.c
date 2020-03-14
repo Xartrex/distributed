@@ -3,6 +3,7 @@
 #include <mqueue.h>
 #include "mensaje.h"
 #include "implementacion.h"
+#include "errno.h"
 
 TipoLista lista = NULL;
 
@@ -84,14 +85,21 @@ void *geta(void *pet){
     }
     
     pthread_mutex_lock(&mutex_lista);
-    valor = recuperar(&lista, a->clave, a->n);
+    int err = 0;
+    int *ip;
+    ip = &err;
+    valor = recuperar(&lista, a->clave, a->n, ip);
     pthread_mutex_unlock(&mutex_lista);
 
-    if(valor == -1){
+    if(err == -1){
         cod_error = -1;
+        ress.cod_error = cod_error;
+        ress.valor = cod_error;
+    } else {
+        ress.cod_error = cod_error;
+        ress.valor = valor;
     }
-    ress.cod_error = cod_error;
-    ress.valor = valor;
+    
     
     int checkSend = mq_send(cc, (const char*) &ress, sizeof(ress), 0);  //Se envía la cola
     if(checkSend == -1){

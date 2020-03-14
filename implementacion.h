@@ -5,7 +5,7 @@
 typedef struct elementoLista *TipoLista;
 
 int insertar(TipoLista *l, char *name, int elementos);
-int recuperar(TipoLista *l, char *name, int n);
+int recuperar(TipoLista *l, char *name, int n, int *err);
 int meter(TipoLista *l, char *name, int n, int valor);
 int liberar(TipoLista *l, char *name);
 
