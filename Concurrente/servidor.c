@@ -36,6 +36,7 @@ void tratar_peticion (int *s) {
         int lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
             printf("error2\n");
+	    break;
             
         }
         printf("%s\n", inputBuff);
@@ -46,6 +47,7 @@ void tratar_peticion (int *s) {
         int mesg = enviar(s_local, inputBuff, strlen(inputBuff)+1);
         if(mesg == -1){
             printf("error enviar\n");
+	    break;
            
         }
         
