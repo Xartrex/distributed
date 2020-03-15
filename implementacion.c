@@ -16,20 +16,20 @@ int insertar(TipoLista *l, char *nombre, int elementos){
     p1 = *l;
     lista = *l;
     
-     while (lista != NULL) {
-         if(strcmp(lista->nombre, nombre) == 0){
-             return (-1);
-         }else{
-             lista=lista->enlace;
-         }
-     }
-    
+    //Recorremos la lista
+    while (lista != NULL) {
+        if(strcmp(lista->nombre, nombre) == 0){
+            return (-1);
+        } else {
+            lista = lista->enlace;
+        }
+    }
     
     if (p1 == NULL){
         p1 = (struct elementoLista *)malloc(sizeof(struct elementoLista));
         strncpy(p1->nombre, nombre, 1024);
         p1->elementos = elementos;
-        p1->direccion=(int *) malloc(elementos*sizeof(int));
+        p1->direccion = (int *) malloc(elementos*sizeof(int));
         p1->enlace = NULL;
         *l = p1;
     } else {
@@ -51,9 +51,10 @@ int recuperar(TipoLista *l, char *name, int n, int *err){
     TipoLista lista;
         
     lista = *l;
+    //Recorremos la lista
     while (lista != NULL) {
         if(strcmp(lista->nombre, name) == 0){
-            if(n < lista->elementos && (n) >= 0){
+            if(n < lista->elementos && (n) >= 0){   //Se comprueba que no accedemos a una posición incorrecta
                 int valor;
                 valor = lista->direccion[n];
                 return valor;
@@ -76,7 +77,7 @@ int meter(TipoLista *l, char *name, int n, int valor){
     lista = *l;
     while (lista != NULL) {
         if(strcmp(lista->nombre, name) == 0){
-            if(n < lista->elementos && (n) >= 0){
+            if(n < lista->elementos && (n) >= 0){   //Se comprueba que no accedemos a una posición incorrecta
                  lista->direccion[n] = valor;
                  return 0;
                  break;
@@ -96,7 +97,7 @@ int liberar(TipoLista *l, char *name){
     TipoLista lista, aux = NULL;
     lista = *l;
 
-     while (lista != NULL) {
+    while (lista != NULL) {
         if(strcmp(lista->nombre, name) == 0){
             if(aux == NULL){
                 aux = lista->enlace;

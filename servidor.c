@@ -19,6 +19,7 @@ pthread_cond_t cond_mensaje;
 pthread_attr_t t_attr;
 pthread_t thid;
 
+//Dependiendo del codigo de operacion de la peticion se llama a una función u otra
 void tratar_peticion(struct peticion *a){
     pthread_mutex_lock(&mutex_mensaje);
     struct peticion mess = *a;
@@ -42,6 +43,7 @@ void tratar_peticion(struct peticion *a){
     pthread_exit(0);
 }
 
+//Capturamos la señal CTRL+C
 volatile sig_atomic_t stop;
 void inthand(int signum) {
     stop = 1;
@@ -56,11 +58,14 @@ int main(){
     q_attr.mq_maxmsg = 10;
     q_attr.mq_msgsize = sizeof(struct peticion);
  
+    //Creamos la cola del servidor
     q_servidor = mq_open ("/SERVIDOR", O_CREAT|O_RDONLY, 0777, &q_attr);
     if(q_servidor == -1){
         perror("No se puede crear la cola de servidor");
         return 1;
     }
+    
+    //Init del mutex de la lista
     inicializar();
     
     pthread_mutex_init(&mutex_mensaje, NULL);
@@ -70,6 +75,7 @@ int main(){
     pthread_attr_setdetachstate(&t_attr, PTHREAD_CREATE_DETACHED);
     
     signal(SIGINT, inthand);
+    //Bucle del servidor
     while(!stop){
         int e = mq_receive(q_servidor, (char *) &mess, sizeof(struct peticion),0);
         if (e == -1) {
@@ -95,6 +101,7 @@ int main(){
     }
     printf("Servidor parado");
 
+    //Cerramos las cola del servidor y la desvinculamos
     if (mq_close(q_servidor) == -1) {
         perror("Ha ocurrido un error al cerrar la cola del servidor");
         return (-1);
