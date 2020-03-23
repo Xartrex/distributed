@@ -1,28 +1,23 @@
-BIN_FILES  = prueba cliente servidor
+BIN_FILES  = server
 
 CC = gcc
 
 
-CFLAGS =	-Wall  -g
+CCGLAGS =	-Wall  -g
 
 LDFLAGS = -L$(INSTALL_PATH)/lib/
 LDLIBS = -lpthread
 
 
+all: CFLAGS=$(CCGLAGS)
 all: $(BIN_FILES)
 .PHONY : all
 
-prueba: prueba.o lines.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
-
-cliente: cliente.o lines.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
-
-servidor: servidor.o lines.o
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+server: server.o lines.o
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(CFLAGS) -c $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
 
 clean:
 	rm -f $(BIN_FILES) *.o
