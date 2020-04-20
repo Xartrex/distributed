@@ -1,6 +1,11 @@
 import java.io.*;
 import gnu.getopt.Getopt;
 
+import java.lang.* ;
+import java.io.* ;
+import java.net.* ;
+import java.util.* ;
+
 
 class client {
 	
@@ -20,7 +25,58 @@ class client {
 	 */
 	static int register(String user) 
 	{
-		// Write your code here
+		byte bsend[] = new byte[100];
+		byte brecv[] = new byte[100];
+
+		InetAddress server_addr = null;
+		//DatagramSocket s = null;
+		//DatagramPacket out = null;
+		int res;
+		int num[] = new int[2];
+
+
+		try
+		{
+			// Crear las conexiones
+			// incluir el código aqui
+
+			// se crea el socket del cliente
+		
+			//int dir = Integer.parseInt(_port);
+			Socket sc = new Socket(_server, _port);
+			// direción del servidor
+			server_addr = InetAddress.getByName(_server);
+
+			InputStreamReader is = new InputStreamReader(System.in);
+			BufferedReader br = new BufferedReader(is);
+
+			String mensaje = "REGISTER";
+			boolean hecho = false;
+
+			
+			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+		
+			out.writeBytes(mensaje);
+			out.write('\0'); // inserta el código ASCII 0 al final
+			
+				if(mensaje.equals("REGISTER")==true){
+					//DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+					out.writeBytes(user);
+					out.write('\0'); // inserta el código ASCII 0 al final
+				}
+				//if(mensaje.equals("terminar")==true){
+			//		break;
+			//	}
+					
+			
+
+
+		}
+		catch (Exception e)
+		{
+			 System.err.println("excepcion " + e.toString() );
+			 e.printStackTrace();
+		}
 		System.out.println("REGISTER " + user);
 		return 0;
 	}
