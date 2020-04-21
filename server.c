@@ -34,7 +34,7 @@ void tratar_peticion (int *s) {
     condicio = 1;
     pthread_cond_signal(&c);
     pthread_mutex_unlock(&m);
-    int t;
+	char user[256];
     /* tratar la petición utilizando el descriptor s_local */
     
     //variable para enviar mensaje de feedback a cliente
@@ -69,19 +69,87 @@ void tratar_peticion (int *s) {
 		if(conclusion == 0){sprintf(oka, "registrado");}
     	}
 	else if(0 == strcmp(inputBuff,"CONNECT")){
-		sprintf(oka, "conectado");
-	}
+	//si el comando es register, cogemos el parámetro
+        	lline = readLine(s_local, inputBuff, 256);
+	        if(lline == -1){
+        	    printf("error2\n");
+		    break;
+		}
+		//pequeño printf de control		
+		printf("conexion de usuario solicitado");
+
+		//copiar el nombre del usuario al hacer connect para tenerlo a la hora de publicar y borrar contenidos
+		strcpy(user, inputBuff, 256);
+
+		int conclusion;
+		conclusion = conectar(inputBuff, s_local);
+		//ponemos en el char de enviar, registrado, para feedback de cliente
+		if(conclusion == 0){sprintf(oka, "conectado");}
+    	}
 	else if(0 == strcmp(inputBuff, "UNREGISTER")){
-		sprintf(oka, "registro eliminado");
+
+        //si el comando es unregister, cogemos el parámetro
+        	lline = readLine(s_local, inputBuff, 256);
+	        if(lline == -1){
+        	    printf("error2\n");
+		    	break;
+		}
+		//pequeño printf de control		
+		printf("darse de baja de usuario solicitado");
+
+		int conclusion;
+		conclusion = baja(inputBuff);
+		//ponemos en el char de enviar, registrado, para feedback de cliente
+		if(conclusion == 0){sprintf(oka, "registro eliminado");}
+    	
 	}
 	else if(0 == strcmp(inputBuff, "DISCONNECT")){
 		sprintf(oka, "desconectado");
 	}
 	else if(0 == strcmp(inputBuff, "PUBLISH")){
-		sprintf(oka, "publicado");
+	    //si el comando es unregister, cogemos el primer parámetro, que es el nombre del fichero
+        lline = readLine(s_local, inputBuff, 256);
+	    if(lline == -1){
+            printf("error2\n");
+			break;
+		}
+
+		//coger nombre del archivo
+		char name[256];
+		strcpy(name, inputBuff, 256);
+
+		//coger la descripcion
+		lline = readLine(s_local, inputBuff, 256);
+	    if(lline == -1){
+            printf("error2\n");
+			break;
+		}
+
+		//pequeño printf de control		
+		printf("publicar contenido del usuario");
+
+		int conclusion;
+		conclusion = publicar(inputBuff, name, user);
+		//ponemos en el char de enviar, registrado, para feedback de cliente
+		if(conclusion == 0){sprintf(oka, "publicado");}
+    	
 	}
 	else if(0 == strcmp(inputBuff, "DELETE")){
-		sprintf(oka, "eliminado");
+	 //si el comando es unregister, cogemos el primer parámetro, que es el nombre del fichero
+        lline = readLine(s_local, inputBuff, 256);
+	    if(lline == -1){
+            printf("error2\n");
+			break;
+		}
+
+		//pequeño printf de control		
+		printf("eliminar contenido del usuario");
+
+		int conclusion;
+		conclusion = borrar(inputBuff, user);
+		//ponemos en el char de enviar, registrado, para feedback de cliente
+		if(conclusion == 0){sprintf(oka, "eliminado");}
+    	
 	}
 	else if (0 == strcmp(inputBuff, "LIST_USERS")){
 		sprintf(oka, "lista de usuarios");

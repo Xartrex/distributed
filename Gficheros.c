@@ -15,7 +15,7 @@ int registro(char *patata) {
 		mkdir("./ficheros", 0777);
 	}
 	char usuario[256];
-	sprintf(usuario,"./ficheros/%s", patata);
+	sprintf(usuario,"./ficheros/usuarios/%s", patata);
 	// ./ficheros/Usuaro1
 	if (stat(usuario, &st) == 0) { //poner comprobacion de si ya esta registrado con == 0
 		return -1;
@@ -27,3 +27,97 @@ int registro(char *patata) {
 	
 }
 
+int baja(char *patata) {
+    
+	struct stat st = {0};
+
+	
+	if (stat("./ficheros", &st) == -1) {
+		mkdir("./ficheros", 0777);
+		return -1;
+	}
+
+	char usuario[256];
+	sprintf(usuario,"./ficheros/usuarios/%s", patata);
+	// ./ficheros/Usuaro1
+	if (stat(usuario, &st) == 0) { //poner comprobacion de si ya esta registrado con == 0
+		remove(usuario);
+		return 0;
+	}
+	if (stat(usuario, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
+		return -1;
+	}
+	return 0;
+	
+}
+
+int conectar(char *patata, int s_local) {
+    
+	struct stat st = {0};
+	//crear directorio raiz
+	if (stat("./ficheros", &st) == -1) {
+		mkdir("./ficheros", 0777);
+		return -1; //el usuario no existe
+	}
+	//crear directorio de usuarios conectados
+	if (stat("./ficheros/usuarios conectados", &st) == -1) {
+		mkdir("./ficheros/usuarios conectados", 0777);
+	}
+
+	char usuario[256];
+	sprintf(usuario,"./ficheros/usuarios/%s", patata);
+
+
+	// ./ficheros/Usuaro1 si no existe es que no esta registrado
+	if (stat(usuario, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
+		return -1; //el usuario no existe
+	}
+
+	char conexion[256];
+	sprintf(conexion,"./ficheros/usuarios conectados/%s", patata);
+
+	if (stat(usuario, &st) == 0) { //poner comprobacion de si ya esta registrado con == 0
+		int fd;
+		struct sockaddr_in addr;
+    	socklen_t addr_size = sizeof(struct sockaddr_in);
+    	int res = getpeername(s_local, (struct sockaddr *)&addr, &addr_size);
+    	char *clientip = new char[20];
+    	strcpy(clientip, inet_ntoa(addr.sin_addr));
+		unsigned short puerto = addr.sin_port;
+
+		//crea el fichero 
+		fd = fopen(conexion, "w+");
+		if(fd == NULL){
+			return -2; //no se pudo poner como conectado/fallo al crear el archivo
+		}
+
+		//escribe el puerto en el fichero
+		fprintf(fd, "%d,%s", puerto,clientip);
+
+		fclose(fd);
+	}
+	return 0;
+	
+}
+
+int publicar(char *descripcion, char *nombre, char *usuario){
+	//coger ruta del fichero
+	char fichero[256];
+	sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario,nombre);
+	int fd;
+	fd = fopen(fichero, "w+");
+
+	fprintf(fd, "%s", descripcion);
+	fclose(fd);
+	return 0;
+}
+
+int borrar(char *nombre, char *usuario){
+	//coger ruta del fichero
+	char fichero[256];
+	sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario,nombre);
+
+	remove(fichero);
+
+	return 0;
+}

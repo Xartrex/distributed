@@ -97,7 +97,68 @@ class client {
 	 */
 	static int unregister(String user) 
 	{
-		// Write your code here
+		byte bsend[] = new byte[100];
+		byte brecv[] = new byte[100];
+
+		InetAddress server_addr = null;
+		//DatagramSocket s = null;
+		//DatagramPacket out = null;
+		int res;
+		int num[] = new int[2];
+
+
+		try
+		{
+			// Crear las conexiones
+			// incluir el código aqui
+
+			// se crea el socket del cliente
+		
+			//int dir = Integer.parseInt(_port);
+			Socket sc = new Socket(_server, _port);
+			// direción del servidor
+			server_addr = InetAddress.getByName(_server);
+
+			InputStreamReader is = new InputStreamReader(System.in);
+			BufferedReader br = new BufferedReader(is);
+
+			String mensaje = "UNREGISTER";
+			boolean hecho = false;
+
+			
+			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+		
+			out.writeBytes(mensaje);
+			out.write('\0'); // inserta el código ASCII 0 al final
+			
+				if(mensaje.equals("UNREGISTER")==true){
+					out.writeBytes(user);
+					out.write('\0'); // inserta el código ASCII 0 al final
+				}
+				//if(mensaje.equals("terminar")==true){
+			//		break;
+			//	}
+			DataInputStream in = new DataInputStream(sc.getInputStream());
+			byte[] ch = new byte[1];
+			String mensajeR = new String();
+			do{
+				ch[0] = in.readByte();
+				if (ch[0] != '\0'){
+					String d = new String(ch);
+					mensajeR = mensajeR + d;
+				}
+			} while(ch[0] != '\0');
+
+			//mensajeR = br.readLine();
+			//System.out.println(mensajeR);
+
+		}//fin del try
+
+		catch (Exception e)
+		{
+			 System.err.println("excepcion " + e.toString() );
+			 e.printStackTrace();
+		}
 		System.out.println("UNREGISTER " + user);
 		return 0;
 	}
@@ -134,7 +195,68 @@ class client {
 	 */
 	static int publish(String file_name, String description) 
 	{
-		// Write your code here
+		byte bsend[] = new byte[100];
+		byte brecv[] = new byte[100];
+
+		InetAddress server_addr = null;
+		//DatagramSocket s = null;
+		//DatagramPacket out = null;
+		int res;
+		int num[] = new int[2];
+
+
+		try
+		{
+			// Crear las conexiones
+			// incluir el código aqui
+
+			// se crea el socket del cliente
+		
+			//int dir = Integer.parseInt(_port);
+			Socket sc = new Socket(_server, _port);
+			// direción del servidor
+			server_addr = InetAddress.getByName(_server);
+
+			InputStreamReader is = new InputStreamReader(System.in);
+			BufferedReader br = new BufferedReader(is);
+
+			String mensaje = "PUBLISH";
+			boolean hecho = false;
+
+			
+			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+		
+			out.writeBytes(mensaje);
+			out.write('\0'); // inserta el código ASCII 0 al final
+			
+				if(mensaje.equals("PUBLISH")==true){
+					out.writeBytes(file_name);
+					out.write('\0'); // inserta el código ASCII 0 al final
+					out.writeBytes(description);
+					out.write('\0');
+				}
+				
+			DataInputStream in = new DataInputStream(sc.getInputStream());
+			byte[] ch = new byte[1];
+			String mensajeR = new String();
+			do{
+				ch[0] = in.readByte();
+				if (ch[0] != '\0'){
+					String d = new String(ch);
+					mensajeR = mensajeR + d;
+				}
+			} while(ch[0] != '\0');
+
+			//mensajeR = br.readLine();
+			//System.out.println(mensajeR);
+
+		}//fin del try
+
+		catch (Exception e)
+		{
+			 System.err.println("excepcion " + e.toString() );
+			 e.printStackTrace();
+		}
 		System.out.println("PUBLISH " + file_name + " " + description);
 		return 0;
 	}
