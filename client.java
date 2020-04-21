@@ -60,24 +60,33 @@ class client {
 			out.write('\0'); // inserta el código ASCII 0 al final
 			
 				if(mensaje.equals("REGISTER")==true){
-					//DataOutputStream out = new DataOutputStream(sc.getOutputStream());
 					out.writeBytes(user);
 					out.write('\0'); // inserta el código ASCII 0 al final
 				}
 				//if(mensaje.equals("terminar")==true){
 			//		break;
 			//	}
-					
-			
+			DataInputStream in = new DataInputStream(sc.getInputStream());
+			byte[] ch = new byte[1];
+			String mensajeR = new String();
+			do{
+				ch[0] = in.readByte();
+				if (ch[0] != '\0'){
+					String d = new String(ch);
+					mensajeR = mensajeR + d;
+				}
+			} while(ch[0] != '\0');
 
+			//mensajeR = br.readLine();
+			System.out.println(mensajeR);
 
-		}
+		}//fin del try
+
 		catch (Exception e)
 		{
 			 System.err.println("excepcion " + e.toString() );
 			 e.printStackTrace();
 		}
-		System.out.println("REGISTER " + user);
 		return 0;
 	}
 	

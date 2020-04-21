@@ -37,6 +37,10 @@ void tratar_peticion (int *s) {
     int t;
     /* tratar la petición utilizando el descriptor s_local */
     
+    //variable para enviar mensaje de feedback a cliente
+    char oka[256];
+    sprintf(oka, "nada");
+
     /* transferir datos sobre newsd*/
     for(;;) {
         char inputBuff[256];
@@ -46,32 +50,57 @@ void tratar_peticion (int *s) {
 	    break;
             
         }
-        printf("%s\n", inputBuff);
-		if(t == 1){
-			int conclusion;
-			conclusion = registro(inputBuff);
-			printf("patata2");
-			t = 0;
-			if(conclusion == 0){
-				
-			}
-			//enviar la palabra terminar
-			break;
+	//de la forma planteada, los errores deben mostrarlos 
+	//las funciones llamadas dentro de los IFs
+	printf("%s\n", inputBuff);
+
+	if(0 == strcmp(inputBuff,"REGISTER")){
+		//si el comando es register, cogemos el parámetro
+        	lline = readLine(s_local, inputBuff, 256);
+	        if(lline == -1){
+        	    printf("error2\n");
+		    break;
 		}
-        if(strcmp(inputBuff, "REGISTER") == 0) {
-			t = 1;
-			printf("patasdcasfasfasfaf");
-        }
-        char oka[256];
-		sprintf(oka, "registrado");
+		//pequeño printf de control		
+		printf("Registro de usuario solicitado");
+		int conclusion;
+		conclusion = registro(inputBuff);
+		//ponemos en el char de enviar, registrado, para feedback de cliente
+		if(conclusion == 0){sprintf(oka, "registrado");}
+    	}
+	else if(0 == strcmp(inputBuff,"CONNECT")){
+		sprintf(oka, "conectado");
+	}
+	else if(0 == strcmp(inputBuff, "UNREGISTER")){
+		sprintf(oka, "registro eliminado");
+	}
+	else if(0 == strcmp(inputBuff, "DISCONNECT")){
+		sprintf(oka, "desconectado");
+	}
+	else if(0 == strcmp(inputBuff, "PUBLISH")){
+		sprintf(oka, "publicado");
+	}
+	else if(0 == strcmp(inputBuff, "DELETE")){
+		sprintf(oka, "eliminado");
+	}
+	else if (0 == strcmp(inputBuff, "LIST_USERS")){
+		sprintf(oka, "lista de usuarios");
+	}
+	else if(0 == strcmp(inputBuff, "LIST_CONNECT")){
+		sprintf(oka, "lista de usuarios conectados");
+	}
+	else if(0 == strcmp(inputBuff, "GET_FILE")){
+		sprintf(oka, "archivo obtenido");
+	}
+
         int mesg2 = enviar(s_local, oka, strlen(oka)+1);
         if(mesg2 == -1){
             printf("error enviar2\n");
 	    	break;
            
-        }
-        
-	}
+        }        
+    }//fin del for infinito, fin de conexion
+
     printf("Cerrando la conexion\n");
     close(s_local);
     pthread_exit(NULL);
