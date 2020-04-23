@@ -6,9 +6,42 @@ import java.io.* ;
 import java.net.* ;
 import java.util.* ;
 
+class TratarPeticion extends Thread{
+	private ServerSocket serverSock;
+	private	Socket sc = null;
+	private	int num[];  //peticion
+	private	int res;
+
+	TratarPeticion(ServerSocket a){
+		serverSock = a;
+	}
+
+	public void run(){
+		while(true){
+			try{
+				sc = serverSock.accept(); //esperando conexion
+
+				InputStream istream = sc.getInputStream(); //recibimos info del server
+				ObjectInput in = new ObjectInputStream(istream); //lo transformamos a algo legible para java
+
+				num = (int[]) in.readObject();
+				res = num[0] + num[1];
+
+				DataOutputStream ostream = new DataOutputStream(sc.getOutputStream());
+
+				ostream.writeInt(res);
+				ostream.flush();
+				sc.close();
+			}catch(Exception e){
+				System.err.println("exception " + e.toString());
+				e.printStackTrace();
+			}
+		}
+	}
+}
 
 class client {
-	
+
 	
 	/******************* ATTRIBUTES *******************/
 	
@@ -25,12 +58,8 @@ class client {
 	 */
 	static int register(String user) 
 	{
-		byte bsend[] = new byte[100];
-		byte brecv[] = new byte[100];
 
 		InetAddress server_addr = null;
-		//DatagramSocket s = null;
-		//DatagramPacket out = null;
 		int res;
 		int num[] = new int[2];
 
@@ -38,12 +67,11 @@ class client {
 		try
 		{
 			// Crear las conexiones
-			// incluir el código aqui
 
 			// se crea el socket del cliente
-		
-			//int dir = Integer.parseInt(_port);
 			Socket sc = new Socket(_server, _port);
+			//int dir = Integer.parseInt(_port);
+			
 			// direción del servidor
 			server_addr = InetAddress.getByName(_server);
 
@@ -97,12 +125,8 @@ class client {
 	 */
 	static int unregister(String user) 
 	{
-		byte bsend[] = new byte[100];
-		byte brecv[] = new byte[100];
 
 		InetAddress server_addr = null;
-		//DatagramSocket s = null;
-		//DatagramPacket out = null;
 		int res;
 		int num[] = new int[2];
 
@@ -172,6 +196,78 @@ class client {
 	{
 		// Write your code here
 		System.out.println("CONNECT " + user);
+
+		ServerSocket serverSock = null;
+		try{
+			serverSock = new ServerSocket(0); //nos devuelve el socket que quiera
+			new TratarPeticion(serverSock).start();
+		}catch(Exception e){
+				System.err.println("Error cerrandi socket");
+		}
+		int puerto = serverSock.getLocalPort();
+		String port = Integer.toString(puerto);
+		
+		//empieza lo tipico de lo que hace el cliente
+		InetAddress server_addr = null;
+		int res;
+		int num[] = new int[2];
+
+
+		try
+		{
+			// Crear las conexiones
+			// incluir el código aqui
+
+			// se crea el socket del cliente
+		
+			//int dir = Integer.parseInt(_port);
+			Socket sc = new Socket(_server, _port);
+			// direción del servidor
+			server_addr = InetAddress.getByName(_server);
+
+			InputStreamReader is = new InputStreamReader(System.in);
+			BufferedReader br = new BufferedReader(is);
+
+			String mensaje = "CONNECT";
+			boolean hecho = false;
+
+			
+			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+		
+			out.writeBytes(mensaje);
+			out.write('\0'); // inserta el código ASCII 0 al final
+			
+				if(mensaje.equals("CONNECT")==true){
+					out.writeBytes(user);
+					out.write('\0'); // inserta el código ASCII 0 al final
+					out.writeBytes(port);
+					out.write('\0');
+				}
+				//if(mensaje.equals("terminar")==true){
+			//		break;
+			//	}
+			DataInputStream in = new DataInputStream(sc.getInputStream());
+			byte[] ch = new byte[1];
+			String mensajeR = new String();
+			do{
+				ch[0] = in.readByte();
+				if (ch[0] != '\0'){
+					String d = new String(ch);
+					mensajeR = mensajeR + d;
+				}
+			} while(ch[0] != '\0');
+
+			//mensajeR = br.readLine();
+			//System.out.println(mensajeR);
+
+		}//fin del try
+
+		catch (Exception e)
+		{
+			 System.err.println("excepcion " + e.toString() );
+			 e.printStackTrace();
+		}
+
 		return 0;
 	}
 	

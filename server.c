@@ -69,9 +69,9 @@ void tratar_peticion (int *s) {
 		if(conclusion == 0){sprintf(oka, "registrado");}
     	}
 	else if(0 == strcmp(inputBuff,"CONNECT")){
-	//si el comando es register, cogemos el parámetro
-        	lline = readLine(s_local, inputBuff, 256);
-	        if(lline == -1){
+	
+        lline = readLine(s_local, inputBuff, 256);
+	    if(lline == -1){
         	    printf("error2\n");
 		    break;
 		}
@@ -79,10 +79,17 @@ void tratar_peticion (int *s) {
 		printf("conexion de usuario solicitado");
 
 		//copiar el nombre del usuario al hacer connect para tenerlo a la hora de publicar y borrar contenidos
-		strcpy(user, inputBuff, 256);
+		strcpy(user, inputBuff);
+		
+		//aqui pilla el puerto
+		lline = readLine(s_local, inputBuff, 256);
+	    if(lline == -1){
+        	    printf("error2\n");
+		    break;
+		}
 
 		int conclusion;
-		conclusion = conectar(inputBuff, s_local);
+		conclusion = conectar(user, s_local, inputBuff);
 		//ponemos en el char de enviar, registrado, para feedback de cliente
 		if(conclusion == 0){sprintf(oka, "conectado");}
     	}
@@ -116,7 +123,7 @@ void tratar_peticion (int *s) {
 
 		//coger nombre del archivo
 		char name[256];
-		strcpy(name, inputBuff, 256);
+		strcpy(name, inputBuff);
 
 		//coger la descripcion
 		lline = readLine(s_local, inputBuff, 256);

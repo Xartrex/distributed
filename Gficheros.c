@@ -4,6 +4,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #define MAX 256
 
@@ -14,6 +18,9 @@ int registro(char *patata) {
 	if (stat("./ficheros", &st) == -1) {
 		mkdir("./ficheros", 0777);
 	}
+
+	mkdir("./ficheros/usuarios", 0777);
+
 	char usuario[256];
 	sprintf(usuario,"./ficheros/usuarios/%s", patata);
 	// ./ficheros/Usuaro1
@@ -51,7 +58,7 @@ int baja(char *patata) {
 	
 }
 
-int conectar(char *patata, int s_local) {
+int conectar(char *patata, int s_local, char *puerto) {
     
 	struct stat st = {0};
 	//crear directorio raiz
@@ -77,13 +84,16 @@ int conectar(char *patata, int s_local) {
 	sprintf(conexion,"./ficheros/usuarios conectados/%s", patata);
 
 	if (stat(usuario, &st) == 0) { //poner comprobacion de si ya esta registrado con == 0
-		int fd;
+		FILE *fd;
 		struct sockaddr_in addr;
     	socklen_t addr_size = sizeof(struct sockaddr_in);
     	int res = getpeername(s_local, (struct sockaddr *)&addr, &addr_size);
-    	char *clientip = new char[20];
+		if(res == -1){
+			return -2;
+		}
+    	char clientip[20];
     	strcpy(clientip, inet_ntoa(addr.sin_addr));
-		unsigned short puerto = addr.sin_port;
+		//unsigned short puerto = addr.sin_port;
 
 		//crea el fichero 
 		fd = fopen(conexion, "w+");
@@ -92,7 +102,7 @@ int conectar(char *patata, int s_local) {
 		}
 
 		//escribe el puerto en el fichero
-		fprintf(fd, "%d,%s", puerto,clientip);
+		fprintf(fd, "%s,%s", puerto,clientip);
 
 		fclose(fd);
 	}
@@ -104,7 +114,7 @@ int publicar(char *descripcion, char *nombre, char *usuario){
 	//coger ruta del fichero
 	char fichero[256];
 	sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario,nombre);
-	int fd;
+	FILE *fd;
 	fd = fopen(fichero, "w+");
 
 	fprintf(fd, "%s", descripcion);
