@@ -161,10 +161,30 @@ void tratar_peticion (int *s) {
     	
 	}
 	else if (0 == strcmp(inputBuff, "LIST_USERS")){
-		sprintf(oka, "lista de usuarios");
+		//pequeño printf de control		
+		printf("lista de usuarios conectados");
+
+		int conclusion;
+		conclusion = list_users(s_local);
+		//ponemos en el char de enviar, registrado, para feedback de cliente
+		if(conclusion == 0){sprintf(oka, "listado de usuarios");}
+    	
 	}
-	else if(0 == strcmp(inputBuff, "LIST_CONNECT")){
-		sprintf(oka, "lista de usuarios conectados");
+	else if(0 == strcmp(inputBuff, "LIST_CONTENT")){
+        lline = readLine(s_local, inputBuff, 256);
+	    if(lline == -1){
+            printf("error2\n");
+			break;
+		}
+
+		//pequeño printf de control		
+		printf("lista del contenido del usuario\n");
+
+		int conclusion;
+		conclusion = list_contenido(inputBuff, s_local);
+		//ponemos en el char de enviar, registrado, para feedback de cliente
+		if(conclusion == 0){sprintf(oka, "lista de contenido");}
+    	
 	}
 	else if(0 == strcmp(inputBuff, "GET_FILE")){
 		sprintf(oka, "archivo obtenido");

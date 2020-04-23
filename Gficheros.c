@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "lines.h"
-#include "dirent.h"
+#include <dirent.h>
 
 #define MAX 256
 
@@ -73,19 +73,19 @@ int conectar(char *usuario, int s_local, char *puerto) {
 		mkdir("./ficheros/usuarios conectados", 0777);
 	}
 
-	char usuario[256];
-	sprintf(usuario,"./ficheros/usuarios/%s", usuario);
+	char patata[256];
+	sprintf(patata,"./ficheros/usuarios/%s", usuario);
 
 
 	// ./ficheros/Usuaro1 si no existe es que no esta registrado
-	if (stat(usuario, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
+	if (stat(patata, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
 		return -1; //el usuario no existe
 	}
 
 	char conexion[256];
 	sprintf(conexion,"./ficheros/usuarios conectados/%s", usuario);
 
-	if (stat(usuario, &st) == 0) { //poner comprobacion de si ya esta registrado con == 0
+	if (stat(patata, &st) == 0) { //poner comprobacion de si ya esta registrado con == 0
 		FILE *fd;
 		struct sockaddr_in addr;
     	socklen_t addr_size = sizeof(struct sockaddr_in);
@@ -154,28 +154,115 @@ int list_users(int s_local){
     if(dirp == NULL){
         return -2;
     }
+
+	int contador = 0;
+	while((direntp = readdir(dirp)) != NULL){
+		if(direntp->d_type == DT_REG){
+			contador++;
+		}
+	}
+	//enviar contador
+	char contadore[256];
+	sprintf(contadore,"%d", contador);
+	int mesg2 = enviar(s_local, contadore, strlen(contadore)+1);
+	if(mesg2 == -1){
+		printf("error enviar2\n");
+		return -2;
+	}
+
     while((direntp = readdir(dirp)) != NULL){
-        char nombre[256];
+        //char nombre[256];
         FILE *fd;
-        char rutaFichero[256];
+        char rutaFichero[512];
         sprintf(rutaFichero, "./ficheros/usuarios conectados/%s", direntp->d_name);
         fd = fopen(rutaFichero, "r");
         
-        uint16_t puerto;
         char buffer[256];
-        fread(buffer, 256, fd);
+		char puerto[6];
+		char ip[20];
+        fread(buffer, 256, 1, fd);
+		int precoma = 0;
+		int j = 0;
+		//parser para leer el fichero y extraer el puerto y la ip
         for(int i = 0; i < 256; i++){
-            
+            if(precoma == 0 && buffer[i]!= ','){
+				puerto[j]=buffer[i];
+				j++;
+			}
+			if(buffer[i]== ','){
+				precoma=1;
+				j=0;
+			}
+			if(precoma==1 && buffer[i+1]!= ' '){
+				ip[j] = buffer[i+1];
+			}
         }
-        
-        sprintf("%s", direntp->d_name ); 
+		fclose(fd);
+        char envio[512];
+        sprintf(envio, "%s  %s  %s", direntp->d_name, ip, puerto); 
+
+		int mesg2 = enviar(s_local, envio, strlen(envio)+1);
+		if(mesg2 == -1){
+			printf("error enviar2\n");
+			return -2;
+		}
     }
     
-    int mesg2 = enviar(s_local, oka, strlen(oka)+1);
-    if(mesg2 == -1){
-        printf("error enviar2\n");
-        break;
+    
+
+	return 0;
+}
+
+int list_contenido(char *usuario, int s_local){
+	struct stat st = {0};
+    char ruta[256];
+    sprintf(ruta, "./ficheros/usuarios/%s", usuario);
+	if (stat(ruta, &st) == -1) {
+		return -1;// usuario no registrado
+	}
+
+	char conectado[256];
+	sprintf(conectado, "./ficheros/usuarios conectados/%s", usuario);
+	FILE *ff;
+	ff = fopen(conectado, "r");
+	if(ff == NULL){
+		return -3; //el usuario no esta conectado
+	}
+	fclose(ff);
+
+    DIR *dirp;
+    struct dirent *direntp;
+    dirp = opendir(ruta);
+    if(dirp == NULL){
+        return -2;
     }
+	int contador = 0;
+	while((direntp = readdir(dirp)) != NULL){
+		if(direntp->d_type == DT_REG){
+			contador++;
+		}
+	}
+	//enviar contador
+	char contadore[256];
+	sprintf(contadore,"%d", contador);
+	int mesg2 = enviar(s_local, contadore, strlen(contadore)+1);
+	if(mesg2 == -1){
+		printf("error enviar2\n");
+		return -2;
+	}
+
+    while((direntp = readdir(dirp)) != NULL){
+        char envio[256];
+        sprintf(envio, "%s", direntp->d_name); 
+
+		int mesg2 = enviar(s_local, envio, strlen(envio)+1);
+		if(mesg2 == -1){
+			printf("error enviar2\n");
+			return -2;
+		}
+    }
+    
+    
 
 	return 0;
 }
