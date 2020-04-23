@@ -80,6 +80,7 @@ void tratar_peticion (int *s) {
 
 		//copiar el nombre del usuario al hacer connect para tenerlo a la hora de publicar y borrar contenidos
 		strcpy(user, inputBuff);
+        printf("%s", user);
 		
 		//aqui pilla el puerto
 		lline = readLine(s_local, inputBuff, 256);
@@ -87,7 +88,7 @@ void tratar_peticion (int *s) {
         	    printf("error2\n");
 		    break;
 		}
-
+		
 		int conclusion;
 		conclusion = conectar(user, s_local, inputBuff);
 		//ponemos en el char de enviar, registrado, para feedback de cliente
@@ -124,7 +125,7 @@ void tratar_peticion (int *s) {
 		//coger nombre del archivo
 		char name[256];
 		strcpy(name, inputBuff);
-
+        
 		//coger la descripcion
 		lline = readLine(s_local, inputBuff, 256);
 	    if(lline == -1){
@@ -133,7 +134,8 @@ void tratar_peticion (int *s) {
 		}
 
 		//pequeño printf de control		
-		printf("publicar contenido del usuario");
+		printf("publicar contenido del usuario\n");
+        printf("%s\n", user);
 
 		int conclusion;
 		conclusion = publicar(inputBuff, name, user);

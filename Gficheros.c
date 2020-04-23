@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "lines.h"
+#include "dirent.h"
 
 #define MAX 256
 
@@ -58,7 +60,7 @@ int baja(char *patata) {
 	
 }
 
-int conectar(char *patata, int s_local, char *puerto) {
+int conectar(char *usuario, int s_local, char *puerto) {
     
 	struct stat st = {0};
 	//crear directorio raiz
@@ -72,7 +74,7 @@ int conectar(char *patata, int s_local, char *puerto) {
 	}
 
 	char usuario[256];
-	sprintf(usuario,"./ficheros/usuarios/%s", patata);
+	sprintf(usuario,"./ficheros/usuarios/%s", usuario);
 
 
 	// ./ficheros/Usuaro1 si no existe es que no esta registrado
@@ -81,7 +83,7 @@ int conectar(char *patata, int s_local, char *puerto) {
 	}
 
 	char conexion[256];
-	sprintf(conexion,"./ficheros/usuarios conectados/%s", patata);
+	sprintf(conexion,"./ficheros/usuarios conectados/%s", usuario);
 
 	if (stat(usuario, &st) == 0) { //poner comprobacion de si ya esta registrado con == 0
 		FILE *fd;
@@ -113,7 +115,8 @@ int conectar(char *patata, int s_local, char *puerto) {
 int publicar(char *descripcion, char *nombre, char *usuario){
 	//coger ruta del fichero
 	char fichero[256];
-	sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario,nombre);
+	sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario, nombre);
+    printf("Print del Gficheros: %s\n", usuario);
 	FILE *fd;
 	fd = fopen(fichero, "w+");
 
@@ -125,9 +128,54 @@ int publicar(char *descripcion, char *nombre, char *usuario){
 int borrar(char *nombre, char *usuario){
 	//coger ruta del fichero
 	char fichero[256];
-	sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario,nombre);
+	sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario, nombre);
 
 	remove(fichero);
+
+	return 0;
+}
+
+int desconectar(char *usuario){
+	//coger ruta del fichero
+	char fichero[256];
+	sprintf(fichero,"./ficheros/usuarios concetados/%s", usuario);
+
+	remove(fichero);
+
+	return 0;
+}
+
+int list_users(int s_local){
+    char ruta[256];
+    sprintf(ruta, "./ficheros/usuarios conectados");
+    DIR *dirp;
+    struct dirent *direntp;
+    dirp = opendir(ruta);
+    if(dirp == NULL){
+        return -2;
+    }
+    while((direntp = readdir(dirp)) != NULL){
+        char nombre[256];
+        FILE *fd;
+        char rutaFichero[256];
+        sprintf(rutaFichero, "./ficheros/usuarios conectados/%s", direntp->d_name);
+        fd = fopen(rutaFichero, "r");
+        
+        uint16_t puerto;
+        char buffer[256];
+        fread(buffer, 256, fd);
+        for(int i = 0; i < 256; i++){
+            
+        }
+        
+        sprintf("%s", direntp->d_name ); 
+    }
+    
+    int mesg2 = enviar(s_local, oka, strlen(oka)+1);
+    if(mesg2 == -1){
+        printf("error enviar2\n");
+        break;
+    }
 
 	return 0;
 }
