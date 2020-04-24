@@ -163,7 +163,7 @@ int list_users(int s_local){
 	}
 	//enviar contador
 	char contadore[256];
-	sprintf(contadore,"%d", contador);
+	sprintf(contadore,"%d", contador*3); //se envian tres parametros por cliente
 	int mesg2 = enviar(s_local, contadore, strlen(contadore)+1);
 	if(mesg2 == -1){
 		printf("error enviar2\n");
@@ -198,14 +198,32 @@ int list_users(int s_local){
 			}
         }
 		fclose(fd);
-        char envio[512];
-        sprintf(envio, "%s  %s  %s", direntp->d_name, ip, puerto); 
-
-		int mesg2 = enviar(s_local, envio, strlen(envio)+1);
+		//se envia el nombre
+        char envio1[256];
+        sprintf(envio1, "%s", direntp->d_name); 
+		mesg2 = enviar(s_local, envio1, strlen(envio1)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
 			return -2;
 		}
+		//se envia la ip
+		char envio2[256];
+        sprintf(envio2, "%s", ip); 
+		mesg2 = enviar(s_local, envio2, strlen(envio2)+1);
+		if(mesg2 == -1){
+			printf("error enviar2\n");
+			return -2;
+		}
+		//Se envia el puerto
+		char envio3[256];
+        sprintf(envio3, "%s", puerto); 
+		mesg2 = enviar(s_local, envio3, strlen(envio3)+1);
+		if(mesg2 == -1){
+			printf("error enviar2\n");
+			return -2;
+		}
+
+
     }
     
     
@@ -244,7 +262,7 @@ int list_contenido(char *usuario, int s_local){
 	}
 	//enviar contador
 	char contadore[256];
-	sprintf(contadore,"%d", contador);
+	sprintf(contadore,"%d", contador*2);// se multipiplica por 2 ya que se envian 2 parametros por fichero, para el bucle de java
 	int mesg2 = enviar(s_local, contadore, strlen(contadore)+1);
 	if(mesg2 == -1){
 		printf("error enviar2\n");
@@ -252,14 +270,41 @@ int list_contenido(char *usuario, int s_local){
 	}
 
     while((direntp = readdir(dirp)) != NULL){
-        char envio[256];
-        sprintf(envio, "%s", direntp->d_name); 
+		FILE *fd;
+		char rutaFichero2[512];
+        sprintf(rutaFichero2, "./ficheros/usuarios/%s/%s", usuario, direntp->d_name);
+		fd = fopen(rutaFichero2, "r");
+        
+        char buffer[256];
+		//char descripcion[256];
+        fread(buffer, 256, 1, fd);
+		//int j = 0;
+		//parser para leer el fichero y extraer el puerto y la ip
+        /*for(int i = 0; i < 256; i++){
+            if(precoma == 0 && buffer[i]!= ' '){
+				descripcion[j]=buffer[i];
+				j++;
+			}*/
+		fclose(fd);
 
-		int mesg2 = enviar(s_local, envio, strlen(envio)+1);
+		//envia el nombre primero
+        char envio1[256];
+        sprintf(envio1, "%s", direntp->d_name); 
+		mesg2 = enviar(s_local, envio1, strlen(envio1)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
 			return -2;
 		}
+		//envia la descripcion
+		char envio2[256];
+        sprintf(envio2, "%s", buffer); 
+		mesg2 = enviar(s_local, envio2, strlen(envio2)+1);
+		if(mesg2 == -1){
+			printf("error enviar2\n");
+			return -2;
+		}
+
+
     }
     
     

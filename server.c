@@ -121,6 +121,15 @@ void tratar_peticion (int *s) {
             printf("error2\n");
 			break;
 		}
+		//coger el nombre de usuario
+		char usery[256];
+		strcpy(usery, inputBuff);
+
+		lline = readLine(s_local, inputBuff, 256);
+	    if(lline == -1){
+            printf("error2\n");
+			break;
+		}
 
 		//coger nombre del archivo
 		char name[256];
@@ -138,7 +147,7 @@ void tratar_peticion (int *s) {
         printf("%s\n", user);
 
 		int conclusion;
-		conclusion = publicar(inputBuff, name, user);
+		conclusion = publicar(inputBuff, name, usery);
 		//ponemos en el char de enviar, registrado, para feedback de cliente
 		if(conclusion == 0){sprintf(oka, "publicado");}
     	

@@ -47,7 +47,7 @@ class client {
 	
 	private static String _server   = null;
 	private static int _port = -1;
-		
+	private static String usuario;
 	
 	/********************* METHODS ********************/
 	
@@ -246,6 +246,12 @@ class client {
 				//if(mensaje.equals("terminar")==true){
 			//		break;
 			//	}
+
+
+			//mete en la variable global el usuario conectado, uno por terminal a la vez
+			usuario = user;
+
+
 			DataInputStream in = new DataInputStream(sc.getInputStream());
 			byte[] ch = new byte[1];
 			String mensajeR = new String();
@@ -278,7 +284,7 @@ class client {
 	 */
 	static int disconnect(String user) 
 	{
-		// Write your code here
+		usuario = "";
 		System.out.println("DISCONNECT " + user);
 		return 0;
 	}
@@ -326,6 +332,8 @@ class client {
 			out.write('\0'); // inserta el código ASCII 0 al final
 			
 				if(mensaje.equals("PUBLISH")==true){
+					out.writeBytes(usuario);
+					out.write('\0');
 					out.writeBytes(file_name);
 					out.write('\0'); // inserta el código ASCII 0 al final
 					out.writeBytes(description);
@@ -374,7 +382,63 @@ class client {
 	 */
 	static int list_users()
 	{
-		// Write your code here
+				InetAddress server_addr = null;
+		int res;
+		int num[] = new int[2];
+
+
+		try
+		{
+			// Crear las conexiones
+			// incluir el código aqui
+
+			// se crea el socket del cliente
+		
+			//int dir = Integer.parseInt(_port);
+			Socket sc = new Socket(_server, _port);
+			// direción del servidor
+			server_addr = InetAddress.getByName(_server);
+
+			InputStreamReader is = new InputStreamReader(System.in);
+			BufferedReader br = new BufferedReader(is);
+
+			String mensaje = "LIST_USERS";
+			boolean hecho = false;
+
+			
+			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+		
+			out.writeBytes(mensaje);
+			out.write('\0'); // inserta el código ASCII 0 al final
+			
+				if(mensaje.equals("LIST_USERS")==true){
+					//out.writeBytes(user);
+					out.write('\0'); // inserta el código ASCII 0 al final
+				}
+				//if(mensaje.equals("terminar")==true){
+			//		break;
+			//	}
+			DataInputStream in = new DataInputStream(sc.getInputStream());
+			byte[] ch = new byte[1];
+			String mensajeR = new String();
+			do{
+				ch[0] = in.readByte();
+				if (ch[0] != '\0'){
+					String d = new String(ch);
+					mensajeR = mensajeR + d;
+				}
+			} while(ch[0] != '\0');
+
+			//mensajeR = br.readLine();
+			//System.out.println(mensajeR);
+
+		}//fin del try
+
+		catch (Exception e)
+		{
+			 System.err.println("excepcion " + e.toString() );
+			 e.printStackTrace();
+		}
 		System.out.println("LIST_USERS " );
 		return 0;
 	}
