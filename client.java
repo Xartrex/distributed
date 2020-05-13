@@ -59,42 +59,25 @@ class client {
 	static int register(String user) 
 	{
 
-		InetAddress server_addr = null;
-		int res;
-		int num[] = new int[2];
-
+		int res = 0;
 
 		try
 		{
-			// Crear las conexiones
-
-			// se crea el socket del cliente
+			//Se crea el socket del cliente
 			Socket sc = new Socket(_server, _port);
-			//int dir = Integer.parseInt(_port);
-			
-			// direción del servidor
-			server_addr = InetAddress.getByName(_server);
-
-			InputStreamReader is = new InputStreamReader(System.in);
-			BufferedReader br = new BufferedReader(is);
-
 			String mensaje = "REGISTER";
-			boolean hecho = false;
-
-			
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+			DataInputStream in = new DataInputStream(sc.getInputStream());
 		
+            //Se envía la cadena REGISTER con el nombre de usuario
 			out.writeBytes(mensaje);
 			out.write('\0'); // inserta el código ASCII 0 al final
-			
-				if(mensaje.equals("REGISTER")==true){
-					out.writeBytes(user);
-					out.write('\0'); // inserta el código ASCII 0 al final
-				}
-				//if(mensaje.equals("terminar")==true){
-			//		break;
-			//	}
-			DataInputStream in = new DataInputStream(sc.getInputStream());
+            if(mensaje.equals("REGISTER")==true){
+                out.writeBytes(user);
+                out.write('\0'); // inserta el código ASCII 0 al final
+            }
+
+            //Leemos la respuesta del servidor
 			byte[] ch = new byte[1];
 			String mensajeR = new String();
 			do{
@@ -105,17 +88,29 @@ class client {
 				}
 			} while(ch[0] != '\0');
 
-			//mensajeR = br.readLine();
-			System.out.println(mensajeR);
-
+			//Se pasa a int
+            res = Integer.parseInt(mensajeR);
+			
 		}//fin del try
 
 		catch (Exception e)
 		{
 			 System.err.println("excepcion " + e.toString() );
 			 e.printStackTrace();
+			 res = 2;
 		}
-		return 0;
+		
+		System.out.println(res);
+        if(res == 0){
+			System.out.println("c> REGISTER OK");
+		} else if(res == -1){
+			System.out.println("c> USERNAME IN USE");
+		} else {
+			System.out.println("c> REGISTER FAIL");
+		}
+		
+		return res;
+		
 	}
 	
 	/**

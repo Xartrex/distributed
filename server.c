@@ -55,18 +55,28 @@ void tratar_peticion (int *s) {
 	printf("%s\n", inputBuff);
 
 	if(0 == strcmp(inputBuff,"REGISTER")){
-		//si el comando es register, cogemos el parámetro
-        	lline = readLine(s_local, inputBuff, 256);
-	        if(lline == -1){
-        	    printf("error2\n");
-		    break;
+		//Si el comando es register, cogemos el parámetro
+        lline = readLine(s_local, inputBuff, 256);
+        if(lline <= 0){
+            printf("Error en readLine\n");
+            break;
 		}
+		
 		//pequeño printf de control		
 		printf("Registro de usuario solicitado");
-		int conclusion;
-		conclusion = registro(inputBuff);
+        
+		int conclusion = registro(inputBuff);
 		//ponemos en el char de enviar, registrado, para feedback de cliente
+        
+        char resultado[2];
+        sprintf(resultado, "%d", conclusion);
+        if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
+            printf("Error al enviar\n");
+            exit(0);
+        }
+        /*
 		if(conclusion == 0){sprintf(oka, "registrado");}
+		*/
     	}
 	else if(0 == strcmp(inputBuff,"CONNECT")){
 	
