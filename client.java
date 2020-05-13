@@ -123,33 +123,33 @@ class client {
 	static int unregister(String user) 
 	{
 
-		int res = 2;
+        int res = 2;
 
-		try
-		{
-			// se crea el socket del cliente
-			Socket sc = new Socket(_server, _port);
-			String mensaje = "UNREGISTER";
-			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+        try
+        {
+            // se crea el socket del cliente
+            Socket sc = new Socket(_server, _port);
+            String mensaje = "UNREGISTER";
+            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
             DataInputStream in = new DataInputStream(sc.getInputStream());
-		
-			out.writeBytes(mensaje);
-			out.write('\0'); // inserta el código ASCII 0 al final
-			
+        
+            out.writeBytes(mensaje);
+            out.write('\0'); // inserta el código ASCII 0 al final
+            
             if(mensaje.equals("UNREGISTER")==true){
                 out.writeBytes(user);
                 out.write('\0'); // inserta el código ASCII 0 al final
             }
 
-			byte[] ch = new byte[1];
-			String mensajeR = new String();
-			do{
-				ch[0] = in.readByte();
-				if (ch[0] != '\0'){
-					String d = new String(ch);
-					mensajeR = mensajeR + d;
-				}
-			} while(ch[0] != '\0');
+            byte[] ch = new byte[1];
+            String mensajeR = new String();
+            do{
+                ch[0] = in.readByte();
+                if (ch[0] != '\0'){
+                    String d = new String(ch);
+                    mensajeR = mensajeR + d;
+                }
+            } while(ch[0] != '\0');
             
             //Se pasa a int
             res = Integer.parseInt(mensajeR);
@@ -157,22 +157,22 @@ class client {
             //Se cierra la conexión
             //sc.close();
 
-		}//fin del try
+        }//fin del try
 
-		catch (Exception e)
-		{
-			 System.err.println("excepcion " + e.toString() );
-			 e.printStackTrace();
-		}
-		
+        catch (Exception e)
+        {
+            System.err.println("excepcion " + e.toString() );
+            e.printStackTrace();
+        }
+        
         if(res == 0){
-			System.out.println("c> UNREGISTER " + user);
-		} else if(res == 1){
-			System.out.println("c> USER DOES NOT EXIST");
-		} else {
-			System.out.println("c> UNREGISTER FAIL");
-		}
-		return res;
+            System.out.println("c> UNREGISTER " + user);
+        } else if(res == 1){
+            System.out.println("c> USER DOES NOT EXIST");
+        } else {
+            System.out.println("c> UNREGISTER FAIL");
+        }
+        return res;
 	}
 	
     	/**
@@ -182,32 +182,32 @@ class client {
 	 */
 	static int connect(String user) 
 	{
-		// Write your code here
-		System.out.println("CONNECT " + user);
+        // Write your code here
+        System.out.println("CONNECT " + user);
 
-		ServerSocket serverSock = null;
-		try{
-			serverSock = new ServerSocket(0); //nos devuelve el socket que quiera
-			new TratarPeticion(serverSock).start();
-		}catch(Exception e){
+        ServerSocket serverSock = null;
+        try{
+            serverSock = new ServerSocket(0); //nos devuelve el socket que quiera
+            new TratarPeticion(serverSock).start();
+        }catch(Exception e){
             System.err.println("Error cerrandi socket");
-		}
-		int puerto = serverSock.getLocalPort();
-		String port = Integer.toString(puerto);
-		
-		int res = 3;
+        }
+        int puerto = serverSock.getLocalPort();
+        String port = Integer.toString(puerto);
+        
+        int res = 3;
 
-		try
-		{
-			// se crea el socket del cliente
-			Socket sc = new Socket(_server, _port);
-			String mensaje = "CONNECT";
-			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+        try
+        {
+            // se crea el socket del cliente
+            Socket sc = new Socket(_server, _port);
+            String mensaje = "CONNECT";
+            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
             DataInputStream in = new DataInputStream(sc.getInputStream());
-		
-			out.writeBytes(mensaje);
-			out.write('\0'); // inserta el código ASCII 0 al final
-			
+        
+            out.writeBytes(mensaje);
+            out.write('\0'); // inserta el código ASCII 0 al final
+            
             if(mensaje.equals("CONNECT")==true){
                 out.writeBytes(user);
                 out.write('\0'); // inserta el código ASCII 0 al final
@@ -215,18 +215,18 @@ class client {
                 out.write('\0');
             }
 
-			//mete en la variable global el usuario conectado, uno por terminal a la vez
-			usuario = user;
+            //mete en la variable global el usuario conectado, uno por terminal a la vez
+            usuario = user;
 
-			byte[] ch = new byte[1];
-			String mensajeR = new String();
-			do{
-				ch[0] = in.readByte();
-				if (ch[0] != '\0'){
-					String d = new String(ch);
-					mensajeR = mensajeR + d;
-				}
-			} while(ch[0] != '\0');
+            byte[] ch = new byte[1];
+            String mensajeR = new String();
+            do{
+                ch[0] = in.readByte();
+                if (ch[0] != '\0'){
+                    String d = new String(ch);
+                    mensajeR = mensajeR + d;
+                }
+            } while(ch[0] != '\0');
 
             //Se pasa a int
             res = Integer.parseInt(mensajeR);
@@ -234,24 +234,24 @@ class client {
             //Se cierra la conexión
             //sc.close();
 
-		}//fin del try
+        }//fin del try
 
-		catch (Exception e)
-		{
-			 System.err.println("excepcion " + e.toString() );
-			 e.printStackTrace();
-		}
+        catch (Exception e)
+        {
+            System.err.println("excepcion " + e.toString() );
+            e.printStackTrace();
+        }
 
         if(res == 0){
-			System.out.println("c> CONNECT OK");
-		} else if(res == 1){
-			System.out.println("c> CONNECT FAIL, USER DOES NOT EXIST");
-		} else if(res == 2){
-			System.out.println("c> USER ALREADY CONNECTED");
-		} else {
+            System.out.println("c> CONNECT OK");
+        } else if(res == 1){
+            System.out.println("c> CONNECT FAIL, USER DOES NOT EXIST");
+        } else if(res == 2){
+            System.out.println("c> USER ALREADY CONNECTED");
+        } else {
             System.out.println("c> CONNECT FAIL");
-		}
-		return res;
+        }
+        return res;
     }
 	
 	 /**
@@ -261,9 +261,58 @@ class client {
 	 */
 	static int disconnect(String user) 
 	{
-		usuario = "";
-		System.out.println("DISCONNECT " + user);
-		return 0;
+        int res = 3;
+
+        try
+        {
+            //Se crea el socket del cliente
+            Socket sc = new Socket(_server, _port);
+            String mensaje = "DISCONNECT";
+            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+            DataInputStream in = new DataInputStream(sc.getInputStream());
+        
+            out.writeBytes(mensaje);
+            out.write('\0'); // inserta el código ASCII 0 al final
+            
+            if(mensaje.equals("DISCONNECT")==true){
+                out.writeBytes(user);
+                out.write('\0'); // inserta el código ASCII 0 al final
+            }
+
+            byte[] ch = new byte[1];
+            String mensajeR = new String();
+            do{
+                ch[0] = in.readByte();
+                if (ch[0] != '\0'){
+                    String d = new String(ch);
+                    mensajeR = mensajeR + d;
+                }
+            } while(ch[0] != '\0');
+            
+            //Se pasa a int
+            res = Integer.parseInt(mensajeR);
+            
+            //Se cierra la conexión
+            //sc.close();
+
+        }//fin del try
+
+        catch (Exception e)
+        {
+            System.err.println("excepcion " + e.toString() );
+            e.printStackTrace();
+        }
+        
+        if(res == 0){
+            System.out.println("c> DISCONNECT OK");
+        } else if(res == 1){
+            System.out.println("c> DISCONNECT FAIL / USER DOES NOT EXIST");
+        } else if(res == 2){
+            System.out.println("c> DISCONNECT FAIL / USER NOT CONNECTED");
+        } else {
+            System.out.println("c> DISCONNECT FAIL");
+        }
+        return res;
 	}
 
 	 /**
@@ -353,7 +402,7 @@ class client {
 	 */
 	static int list_users()
 	{
-        int res;
+        int res = 3;
 
         try
         {

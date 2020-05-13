@@ -132,7 +132,26 @@ void tratar_peticion (int *s) {
     	
 	}
 	else if(0 == strcmp(inputBuff, "DISCONNECT")){
-		sprintf(oka, "desconectado");
+        
+        lline = readLine(s_local, inputBuff, 256);
+        if(lline == -1){
+            printf("Error en el readLine\n");
+            break;
+        }
+        //pequeño printf de control		
+        printf("desconexion de usuario solicitado");
+
+        //copiar el nombre del usuario al hacer disconnect para tenerlo a la hora de publicar y borrar contenidos
+        //strcpy(user, inputBuff);
+        //printf("%s", user);
+        
+        int conclusion = desconectar(inputBuff);
+        char resultado[2];
+        sprintf(resultado, "%d", conclusion);
+        if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
+            printf("Error al enviar\n");
+            exit(0);
+        }
 	}
     else if(0 == strcmp(inputBuff, "PUBLISH")){
         //si el comando es unregister, cogemos el primer parámetro, que es el nombre del fichero

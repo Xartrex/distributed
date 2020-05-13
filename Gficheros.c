@@ -138,7 +138,7 @@ int borrar(char *nombre, char *usuario){
 int desconectar(char *usuario){
 	//coger ruta del fichero
 	char fichero[256];
-	sprintf(fichero,"./ficheros/usuarios concetados/%s", usuario);
+	sprintf(fichero,"./ficheros/usuarios conectados/%s", usuario);
 
 	remove(fichero);
 
