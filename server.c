@@ -154,22 +154,21 @@ void tratar_peticion (int *s) {
         }
 	}
     else if(0 == strcmp(inputBuff, "PUBLISH")){
-        //si el comando es unregister, cogemos el primer parámetro, que es el nombre del fichero
+
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
             printf("Error en el readLine\n");
             break;
         }
-        
         //coger el nombre de usuario
         char usery[256];
         strcpy(usery, inputBuff);
+        
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
             printf("Error en el readLine\n");
             break;
         }
-
         //coger nombre del archivo
         char name[256];
         strcpy(name, inputBuff);
@@ -198,20 +197,37 @@ void tratar_peticion (int *s) {
             
 	}
 	else if(0 == strcmp(inputBuff, "DELETE")){
-	 //si el comando es unregister, cogemos el primer parámetro, que es el nombre del fichero
+
         lline = readLine(s_local, inputBuff, 256);
-	    if(lline == -1){
-            printf("error2\n");
-			break;
-		}
+        if(lline == -1){
+            printf("Error en el readLine\n");
+            break;
+        }
+        //coger el nombre de usuario
+        char usery[256];
+        strcpy(usery, inputBuff);
+        
+        lline = readLine(s_local, inputBuff, 256);
+        if(lline == -1){
+            printf("Error en el readLine\n");
+            break;
+        }
+        //coger nombre del archivo
+        char name[256];
+        strcpy(name, inputBuff);
 
 		//pequeño printf de control		
 		printf("eliminar contenido del usuario");
 
-		int conclusion;
-		conclusion = borrar(inputBuff, user);
-		//ponemos en el char de enviar, registrado, para feedback de cliente
-		if(conclusion == 0){sprintf(oka, "eliminado");}
+		int conclusion = borrar(name, usery);
+        char resultado[2];
+        sprintf(resultado, "%d", conclusion);
+        if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
+            printf("Error al enviar\n");
+            exit(0);
+        }
+        //ponemos en el char de enviar, registrado, para feedback de cliente
+		//if(conclusion == 0){sprintf(oka, "eliminado");}
     	
 	}
 	else if (0 == strcmp(inputBuff, "LIST_USERS")){

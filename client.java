@@ -392,9 +392,63 @@ class client {
 	 */
 	static int delete(String file_name)
 	{
-		// Write your code here
-		System.out.println("DELETE " + file_name);
-		return 0;
+        int res = 4;
+
+        try
+        {
+            //Se crea el socket del cliente
+            Socket sc = new Socket(_server, _port);
+            String mensaje = "DELETE";
+            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+            DataInputStream in = new DataInputStream(sc.getInputStream());
+        
+            out.writeBytes(mensaje);
+            out.write('\0'); // inserta el código ASCII 0 al final
+            
+            if(mensaje.equals("DELETE")==true){
+                out.writeBytes(usuario);
+                out.write('\0');
+                out.writeBytes(file_name);
+                out.write('\0'); // inserta el código ASCII 0 al final
+            }
+            
+            byte[] ch = new byte[1];
+            String mensajeR = new String();
+            do{
+                ch[0] = in.readByte();
+                if (ch[0] != '\0'){
+                    String d = new String(ch);
+                    mensajeR = mensajeR + d;
+                }
+            } while(ch[0] != '\0');
+
+            //Se pasa a int
+            res = Integer.parseInt(mensajeR);
+            
+            //Se cierra la conexión
+            //sc.close();
+
+        }//fin del try
+
+        catch (Exception e)
+        {
+            System.err.println("excepcion " + e.toString() );
+            e.printStackTrace();
+        }
+        System.out.println("DELETE " + file_name);
+        
+        if(res == 0){
+            System.out.println("c> DELETE OK");
+        } else if(res == 1){
+            System.out.println("c> DELETE FAIL, USER DOES NOT EXIST");
+        } else if(res == 2){
+            System.out.println("c> DELETE FAIL, USER NOT CONNECTED");
+        } else if(res == 3){
+            System.out.println("c> DELETE FAIL, CONTENT NOT PUBLISHED");
+        } else {
+            System.out.println("c> PUBLISH FAIL");
+        }
+        return res;
 	}
 
 	 /**

@@ -129,6 +129,7 @@ int borrar(char *nombre, char *usuario){
 	//coger ruta del fichero
 	char fichero[256];
 	sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario, nombre);
+    printf(fichero);
 
 	remove(fichero);
 
@@ -236,7 +237,7 @@ int list_contenido(char *usuario, int s_local){
     char ruta[256];
     sprintf(ruta, "./ficheros/usuarios/%s", usuario);
 	if (stat(ruta, &st) == -1) {
-		return -1;// usuario no registrado
+		return 1;// usuario no registrado
 	}
 
 	char conectado[256];
@@ -244,7 +245,7 @@ int list_contenido(char *usuario, int s_local){
 	FILE *ff;
 	ff = fopen(conectado, "r");
 	if(ff == NULL){
-		return -3; //el usuario no esta conectado
+		return 3; //el usuario no esta conectado
 	}
 	fclose(ff);
 
@@ -252,7 +253,7 @@ int list_contenido(char *usuario, int s_local){
     struct dirent *direntp;
     dirp = opendir(ruta);
     if(dirp == NULL){
-        return -2;
+        return 2;
     }
 	int contador = 0;
 	while((direntp = readdir(dirp)) != NULL){
@@ -266,7 +267,7 @@ int list_contenido(char *usuario, int s_local){
 	int mesg2 = enviar(s_local, contadore, strlen(contadore)+1);
 	if(mesg2 == -1){
 		printf("error enviar2\n");
-		return -2;
+		return 2;
 	}
 
     while((direntp = readdir(dirp)) != NULL){
@@ -293,7 +294,7 @@ int list_contenido(char *usuario, int s_local){
 		mesg2 = enviar(s_local, envio1, strlen(envio1)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
-			return -2;
+			return 2;
 		}
 		//envia la descripcion
 		char envio2[256];
@@ -301,7 +302,7 @@ int list_contenido(char *usuario, int s_local){
 		mesg2 = enviar(s_local, envio2, strlen(envio2)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
-			return -2;
+			return 2;
 		}
 
 
