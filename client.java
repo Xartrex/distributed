@@ -59,7 +59,7 @@ class client {
 	static int register(String user) 
 	{
 
-		int res = 0;
+		int res = 2;
 
 		try
 		{
@@ -90,6 +90,9 @@ class client {
 
 			//Se pasa a int
             res = Integer.parseInt(mensajeR);
+            
+            //Se cierra la conexión
+            //sc.close();
 			
 		}//fin del try
 
@@ -100,10 +103,9 @@ class client {
 			 res = 2;
 		}
 		
-		System.out.println(res);
         if(res == 0){
 			System.out.println("c> REGISTER OK");
-		} else if(res == -1){
+		} else if(res == 1){
 			System.out.println("c> USERNAME IN USE");
 		} else {
 			System.out.println("c> REGISTER FAIL");
@@ -121,43 +123,24 @@ class client {
 	static int unregister(String user) 
 	{
 
-		InetAddress server_addr = null;
-		int res;
-		int num[] = new int[2];
-
+		int res = 2;
 
 		try
 		{
-			// Crear las conexiones
-			// incluir el código aqui
-
 			// se crea el socket del cliente
-		
-			//int dir = Integer.parseInt(_port);
 			Socket sc = new Socket(_server, _port);
-			// direción del servidor
-			server_addr = InetAddress.getByName(_server);
-
-			InputStreamReader is = new InputStreamReader(System.in);
-			BufferedReader br = new BufferedReader(is);
-
 			String mensaje = "UNREGISTER";
-			boolean hecho = false;
-
-			
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+            DataInputStream in = new DataInputStream(sc.getInputStream());
 		
 			out.writeBytes(mensaje);
 			out.write('\0'); // inserta el código ASCII 0 al final
 			
-				if(mensaje.equals("UNREGISTER")==true){
-					out.writeBytes(user);
-					out.write('\0'); // inserta el código ASCII 0 al final
-				}
-				//if(mensaje.equals("terminar")==true){
-			//		break;
-			//	}
-			DataInputStream in = new DataInputStream(sc.getInputStream());
+            if(mensaje.equals("UNREGISTER")==true){
+                out.writeBytes(user);
+                out.write('\0'); // inserta el código ASCII 0 al final
+            }
+
 			byte[] ch = new byte[1];
 			String mensajeR = new String();
 			do{
@@ -167,9 +150,12 @@ class client {
 					mensajeR = mensajeR + d;
 				}
 			} while(ch[0] != '\0');
-
-			//mensajeR = br.readLine();
-			//System.out.println(mensajeR);
+            
+            //Se pasa a int
+            res = Integer.parseInt(mensajeR);
+            
+            //Se cierra la conexión
+            //sc.close();
 
 		}//fin del try
 
@@ -178,8 +164,15 @@ class client {
 			 System.err.println("excepcion " + e.toString() );
 			 e.printStackTrace();
 		}
-		System.out.println("UNREGISTER " + user);
-		return 0;
+		
+        if(res == 0){
+			System.out.println("c> UNREGISTER " + user);
+		} else if(res == 1){
+			System.out.println("c> USER DOES NOT EXIST");
+		} else {
+			System.out.println("c> UNREGISTER FAIL");
+		}
+		return res;
 	}
 	
     	/**
@@ -197,57 +190,34 @@ class client {
 			serverSock = new ServerSocket(0); //nos devuelve el socket que quiera
 			new TratarPeticion(serverSock).start();
 		}catch(Exception e){
-				System.err.println("Error cerrandi socket");
+            System.err.println("Error cerrandi socket");
 		}
 		int puerto = serverSock.getLocalPort();
 		String port = Integer.toString(puerto);
 		
-		//empieza lo tipico de lo que hace el cliente
-		InetAddress server_addr = null;
-		int res;
-		int num[] = new int[2];
-
+		int res = 3;
 
 		try
 		{
-			// Crear las conexiones
-			// incluir el código aqui
-
 			// se crea el socket del cliente
-		
-			//int dir = Integer.parseInt(_port);
 			Socket sc = new Socket(_server, _port);
-			// direción del servidor
-			server_addr = InetAddress.getByName(_server);
-
-			InputStreamReader is = new InputStreamReader(System.in);
-			BufferedReader br = new BufferedReader(is);
-
 			String mensaje = "CONNECT";
-			boolean hecho = false;
-
-			
 			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+            DataInputStream in = new DataInputStream(sc.getInputStream());
 		
 			out.writeBytes(mensaje);
 			out.write('\0'); // inserta el código ASCII 0 al final
 			
-				if(mensaje.equals("CONNECT")==true){
-					out.writeBytes(user);
-					out.write('\0'); // inserta el código ASCII 0 al final
-					out.writeBytes(port);
-					out.write('\0');
-				}
-				//if(mensaje.equals("terminar")==true){
-			//		break;
-			//	}
-
+            if(mensaje.equals("CONNECT")==true){
+                out.writeBytes(user);
+                out.write('\0'); // inserta el código ASCII 0 al final
+                out.writeBytes(port);
+                out.write('\0');
+            }
 
 			//mete en la variable global el usuario conectado, uno por terminal a la vez
 			usuario = user;
 
-
-			DataInputStream in = new DataInputStream(sc.getInputStream());
 			byte[] ch = new byte[1];
 			String mensajeR = new String();
 			do{
@@ -258,8 +228,11 @@ class client {
 				}
 			} while(ch[0] != '\0');
 
-			//mensajeR = br.readLine();
-			//System.out.println(mensajeR);
+            //Se pasa a int
+            res = Integer.parseInt(mensajeR);
+            
+            //Se cierra la conexión
+            //sc.close();
 
 		}//fin del try
 
@@ -269,8 +242,17 @@ class client {
 			 e.printStackTrace();
 		}
 
-		return 0;
-	}
+        if(res == 0){
+			System.out.println("c> CONNECT OK");
+		} else if(res == 1){
+			System.out.println("c> CONNECT FAIL, USER DOES NOT EXIST");
+		} else if(res == 2){
+			System.out.println("c> USER ALREADY CONNECTED");
+		} else {
+            System.out.println("c> CONNECT FAIL");
+		}
+		return res;
+    }
 	
 	 /**
 	 * @param user - User name to disconnect from the system
@@ -292,73 +274,67 @@ class client {
 	 */
 	static int publish(String file_name, String description) 
 	{
-		byte bsend[] = new byte[100];
-		byte brecv[] = new byte[100];
+        
+        int res = 4;
 
-		InetAddress server_addr = null;
-		//DatagramSocket s = null;
-		//DatagramPacket out = null;
-		int res;
-		int num[] = new int[2];
+        try
+        {
+            //Se crea el socket del cliente
+            Socket sc = new Socket(_server, _port);
+            String mensaje = "PUBLISH";
+            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+            DataInputStream in = new DataInputStream(sc.getInputStream());
+        
+            out.writeBytes(mensaje);
+            out.write('\0'); // inserta el código ASCII 0 al final
+            
+            if(mensaje.equals("PUBLISH")==true){
+                out.writeBytes(usuario);
+                out.write('\0');
+                out.writeBytes(file_name);
+                out.write('\0'); // inserta el código ASCII 0 al final
+                out.writeBytes(description);
+                out.write('\0');
+            }
+            
+            byte[] ch = new byte[1];
+            String mensajeR = new String();
+            do{
+                ch[0] = in.readByte();
+                if (ch[0] != '\0'){
+                    String d = new String(ch);
+                    mensajeR = mensajeR + d;
+                }
+            } while(ch[0] != '\0');
 
+            //Se pasa a int
+            res = Integer.parseInt(mensajeR);
+            
+            //Se cierra la conexión
+            //sc.close();
 
-		try
-		{
-			// Crear las conexiones
-			// incluir el código aqui
+        }//fin del try
 
-			// se crea el socket del cliente
-		
-			//int dir = Integer.parseInt(_port);
-			Socket sc = new Socket(_server, _port);
-			// direción del servidor
-			server_addr = InetAddress.getByName(_server);
-
-			InputStreamReader is = new InputStreamReader(System.in);
-			BufferedReader br = new BufferedReader(is);
-
-			String mensaje = "PUBLISH";
-			boolean hecho = false;
-
-			
-			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
-		
-			out.writeBytes(mensaje);
-			out.write('\0'); // inserta el código ASCII 0 al final
-			
-				if(mensaje.equals("PUBLISH")==true){
-					out.writeBytes(usuario);
-					out.write('\0');
-					out.writeBytes(file_name);
-					out.write('\0'); // inserta el código ASCII 0 al final
-					out.writeBytes(description);
-					out.write('\0');
-				}
-				
-			DataInputStream in = new DataInputStream(sc.getInputStream());
-			byte[] ch = new byte[1];
-			String mensajeR = new String();
-			do{
-				ch[0] = in.readByte();
-				if (ch[0] != '\0'){
-					String d = new String(ch);
-					mensajeR = mensajeR + d;
-				}
-			} while(ch[0] != '\0');
-
-			//mensajeR = br.readLine();
-			//System.out.println(mensajeR);
-
-		}//fin del try
-
-		catch (Exception e)
-		{
-			 System.err.println("excepcion " + e.toString() );
-			 e.printStackTrace();
-		}
-		System.out.println("PUBLISH " + file_name + " " + description);
-		return 0;
-	}
+        catch (Exception e)
+        {
+            System.err.println("excepcion " + e.toString() );
+            e.printStackTrace();
+        }
+        System.out.println("PUBLISH " + file_name + " " + description);
+        
+        if(res == 0){
+            System.out.println("c> PUBLISH OK");
+        } else if(res == 1){
+            System.out.println("c> PUBLISH FAIL, USER DOES NOT EXIST");
+        } else if(res == 2){
+            System.out.println("c> PUBLISH FAIL, USER NOT CONNECTED");
+        } else if(res == 3){
+            System.out.println("c> PUBLISH FAIL, CONTENT ALREDAY PUBLISHED");
+        } else {
+            System.out.println("c> PUBLISH FAIL");
+        }
+        return res;
+    }
 
 	 /**
 	 * @param file_name    - file name
@@ -377,66 +353,61 @@ class client {
 	 */
 	static int list_users()
 	{
-				InetAddress server_addr = null;
-		int res;
-		int num[] = new int[2];
+        int res;
 
+        try
+        {
 
-		try
-		{
-			// Crear las conexiones
-			// incluir el código aqui
+            // se crea el socket del cliente
+            Socket sc = new Socket(_server, _port);
+            String mensaje = "LIST_USERS";
+            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+            DataInputStream in = new DataInputStream(sc.getInputStream());
+        
+            out.writeBytes(mensaje);
+            out.write('\0'); // inserta el código ASCII 0 al final
+            
+            if(mensaje.equals("LIST_USERS")==true){
+                //out.writeBytes(user);
+                out.write('\0'); // inserta el código ASCII 0 al final
+            }
 
-			// se crea el socket del cliente
-		
-			//int dir = Integer.parseInt(_port);
-			Socket sc = new Socket(_server, _port);
-			// direción del servidor
-			server_addr = InetAddress.getByName(_server);
+            byte[] ch = new byte[1];
+            String mensajeR = new String();
+            do{
+                ch[0] = in.readByte();
+                if (ch[0] != '\0'){
+                    String d = new String(ch);
+                    mensajeR = mensajeR + d;
+                }
+            } while(ch[0] != '\0');
 
-			InputStreamReader is = new InputStreamReader(System.in);
-			BufferedReader br = new BufferedReader(is);
+            //Se pasa a int
+            res = Integer.parseInt(mensajeR);
+            
+            //Se cierra la conexión
+            //sc.close();
 
-			String mensaje = "LIST_USERS";
-			boolean hecho = false;
+        }//fin del try
 
-			
-			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
-		
-			out.writeBytes(mensaje);
-			out.write('\0'); // inserta el código ASCII 0 al final
-			
-				if(mensaje.equals("LIST_USERS")==true){
-					//out.writeBytes(user);
-					out.write('\0'); // inserta el código ASCII 0 al final
-				}
-				//if(mensaje.equals("terminar")==true){
-			//		break;
-			//	}
-			DataInputStream in = new DataInputStream(sc.getInputStream());
-			byte[] ch = new byte[1];
-			String mensajeR = new String();
-			do{
-				ch[0] = in.readByte();
-				if (ch[0] != '\0'){
-					String d = new String(ch);
-					mensajeR = mensajeR + d;
-				}
-			} while(ch[0] != '\0');
-
-			//mensajeR = br.readLine();
-			//System.out.println(mensajeR);
-
-		}//fin del try
-
-		catch (Exception e)
-		{
-			 System.err.println("excepcion " + e.toString() );
-			 e.printStackTrace();
-		}
-		System.out.println("LIST_USERS " );
-		return 0;
-	}
+        catch (Exception e)
+        {
+            System.err.println("excepcion " + e.toString() );
+            e.printStackTrace();
+        }
+        
+        if(res == 0){
+            System.out.println("c> LIST_USERS OK");
+        } else if(res == 1){
+            System.out.println("c> LIST_USERS FAIL, USER DOES NOT EXIST");
+        } else if(res == 2){
+            System.out.println("c> LIST_USERS FAIL, USER NOT CONNECTED");
+        } else {
+            System.out.println("c> LIST_USERS FAIL");
+        }
+        return res;
+        
+    }
 
 
 	 /**

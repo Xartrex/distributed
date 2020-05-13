@@ -27,7 +27,7 @@ int registro(char *patata) {
 	sprintf(usuario,"./ficheros/usuarios/%s", patata);
 	// ./ficheros/Usuaro1
 	if (stat(usuario, &st) == 0) { //poner comprobacion de si ya esta registrado con == 0
-		return -1;
+		return 1;
 	}
 	if (stat(usuario, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
 		mkdir(usuario, 0777);
@@ -54,7 +54,7 @@ int baja(char *patata) {
 		return 0;
 	}
 	if (stat(usuario, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
-		return -1;
+		return 1;
 	}
 	return 0;
 	
@@ -66,7 +66,7 @@ int conectar(char *usuario, int s_local, char *puerto) {
 	//crear directorio raiz
 	if (stat("./ficheros", &st) == -1) {
 		mkdir("./ficheros", 0777);
-		return -1; //el usuario no existe
+		return 1; //el usuario no existe
 	}
 	//crear directorio de usuarios conectados
 	if (stat("./ficheros/usuarios conectados", &st) == -1) {
@@ -79,7 +79,7 @@ int conectar(char *usuario, int s_local, char *puerto) {
 
 	// ./ficheros/Usuaro1 si no existe es que no esta registrado
 	if (stat(patata, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
-		return -1; //el usuario no existe
+		return 1; //el usuario no existe
 	}
 
 	char conexion[256];
@@ -91,7 +91,7 @@ int conectar(char *usuario, int s_local, char *puerto) {
     	socklen_t addr_size = sizeof(struct sockaddr_in);
     	int res = getpeername(s_local, (struct sockaddr *)&addr, &addr_size);
 		if(res == -1){
-			return -2;
+			return 2;
 		}
     	char clientip[20];
     	strcpy(clientip, inet_ntoa(addr.sin_addr));
@@ -100,7 +100,7 @@ int conectar(char *usuario, int s_local, char *puerto) {
 		//crea el fichero 
 		fd = fopen(conexion, "w+");
 		if(fd == NULL){
-			return -2; //no se pudo poner como conectado/fallo al crear el archivo
+			return 3; //no se pudo poner como conectado/fallo al crear el archivo
 		}
 
 		//escribe el puerto en el fichero
@@ -152,7 +152,7 @@ int list_users(int s_local){
     struct dirent *direntp;
     dirp = opendir(ruta);
     if(dirp == NULL){
-        return -2;
+        return 2;
     }
 
 	int contador = 0;
@@ -167,7 +167,7 @@ int list_users(int s_local){
 	int mesg2 = enviar(s_local, contadore, strlen(contadore)+1);
 	if(mesg2 == -1){
 		printf("error enviar2\n");
-		return -2;
+		return 2;
 	}
 
     while((direntp = readdir(dirp)) != NULL){
@@ -204,7 +204,7 @@ int list_users(int s_local){
 		mesg2 = enviar(s_local, envio1, strlen(envio1)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
-			return -2;
+			return 2;
 		}
 		//se envia la ip
 		char envio2[256];
@@ -212,7 +212,7 @@ int list_users(int s_local){
 		mesg2 = enviar(s_local, envio2, strlen(envio2)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
-			return -2;
+			return 2;
 		}
 		//Se envia el puerto
 		char envio3[256];
@@ -220,7 +220,7 @@ int list_users(int s_local){
 		mesg2 = enviar(s_local, envio3, strlen(envio3)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
-			return -2;
+			return 2;
 		}
 
 
