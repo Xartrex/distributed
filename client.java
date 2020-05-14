@@ -16,24 +16,25 @@ class TratarPeticion extends Thread{
 		serverSock = a;
 	}
 
+
 	public void run(){
 		try{
 			while(true){
-                /*
-				sc = serverSock.accept(); //esperando conexion
-
-				InputStream istream = sc.getInputStream(); //recibimos info del server
-				ObjectInput in = new ObjectInputStream(istream); //lo transformamos a algo legible para java
-
-				num = (int[]) in.readObject();
-				res = num[0] + num[1];
-
-				DataOutputStream ostream = new DataOutputStream(sc.getOutputStream());
-
-				ostream.writeInt(res);
-				ostream.flush();
-				sc.close();
-				*/
+                
+// 				sc = serverSock.accept(); //esperando conexion
+// 
+// 				InputStream istream = sc.getInputStream(); //recibimos info del server
+// 				ObjectInput in = new ObjectInputStream(istream); //lo transformamos a algo legible para java
+// 
+// 				num = (int[]) in.readObject();
+// 				res = num[0] + num[1];
+// 
+// 				DataOutputStream ostream = new DataOutputStream(sc.getOutputStream());
+// 
+// 				ostream.writeInt(res);
+// 				ostream.flush();
+// 				sc.close();
+// 				
 				
                 Socket s_local = serverSock.accept();
                 DataOutputStream out = new DataOutputStream(s_local.getOutputStream());
@@ -62,7 +63,6 @@ class TratarPeticion extends Thread{
                 //recibe del socket el fichero
                 //String rmt_file = leer(in);
                 System.out.println("Leemos el archivo");
-                ch = new byte[1];
                 String fichero = new String();
                 do{
                     ch[0] = in.readByte();
@@ -71,6 +71,7 @@ class TratarPeticion extends Thread{
                         fichero = fichero + d;
                     }
                 } while(ch[0] != '\0');
+                System.out.println("Nombre recibido: " + fichero);
                 
                 File fd = new File(fichero);
 
@@ -100,6 +101,30 @@ class TratarPeticion extends Thread{
             e.printStackTrace();
         }
 	}
+/*
+    public void run(){
+        while(true){
+            try{
+                sc = serverSock.accept(); //esperando conexion
+
+                InputStream istream = sc.getInputStream(); //recibimos info del server
+                ObjectInput in = new ObjectInputStream(istream); //lo transformamos a algo legible para java
+
+                num = (int[]) in.readObject();
+                res = num[0] + num[1];
+
+                DataOutputStream ostream = new DataOutputStream(sc.getOutputStream());
+
+                ostream.writeInt(res);
+                ostream.flush();
+                sc.close();
+            }catch(Exception e){
+                System.err.println("exception " + e.toString());
+                e.printStackTrace();
+            }
+        }
+    }
+    */
 }
 
 //Clase usuario para almacenar en un futuro el listado de usuarios conectados
@@ -766,6 +791,8 @@ class client {
                 
                 //creacion del socket
                 Socket sc = new Socket(ip, port);
+                
+                
                 DataOutputStream out = new DataOutputStream(sc.getOutputStream());
                 DataInputStream in = new DataInputStream(sc.getInputStream());
                 
@@ -775,14 +802,14 @@ class client {
                 out.write('\0'); // inserta el código ASCII 0 al final
             
                 System.out.println("Enviamos el nombre del fichero remoto");
-                if(mensaje.equals("LIST_CONTENT")==true){
+                if(mensaje.equals("GET_FILE")==true){
                     out.writeBytes(remote_file_name);
                     out.write('\0'); // inserta el código ASCII 0 al final
                 }
                 System.out.println(remote_file_name);
 
                 //introducimos un sleep para darle tiempo al servidor local a enviar la respuesta antes de leerla
-                Thread.sleep(500);
+                //Thread.sleep(5000);
                 
                 System.out.println("Recibimos la respuesta");
                 byte[] ch = new byte[1];
@@ -801,7 +828,7 @@ class client {
                 //si el resultado es 0, copiamos el fichero remoto del socket al fichero local
                 if(res == 0){
                     //introducimos un sleep para dar tiempo al servidor de que comience a enviar el fichero
-                    Thread.sleep(500);
+                    //Thread.sleep(500);
                     // abrimos un file para escribir
                     OutputStream outFile = new FileOutputStream(local_file_name);
                     DataOutputStream outputfile = new DataOutputStream(outFile);
@@ -810,6 +837,17 @@ class client {
                     //cerramos el fichero 
                     outputfile.close();
                 }
+                
+                /*
+                OutputStream out = new OutputStream(sc.getOutputStream());
+                ObjectOutput s = new ObjectoutputStream(out);
+                InputStream in = new InputStream(sc.getInputStream());
+                
+                System.out.println("Enviamos el GET_FILE");
+                String mensaje = "GET_FILE";
+                s.writeObject(mensaje);
+                */
+                
             }
             
         }
