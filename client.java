@@ -456,7 +456,7 @@ class client {
 	 */
 	static int list_users()
 	{
-        int res = 3;
+        int res = 0;
 
         try
         {
@@ -471,7 +471,7 @@ class client {
             out.write('\0'); // inserta el código ASCII 0 al final
             
             if(mensaje.equals("LIST_USERS")==true){
-                out.writeBytes(user);
+                out.writeBytes(usuario);
                 out.write('\0'); // inserta el código ASCII 0 al final
             }
 
@@ -489,7 +489,7 @@ class client {
             int conectados = Integer.parseInt(mensajeR);
             
             if(conectados == 0) {
-                String mensajeR = new String();
+                mensajeR = new String();
                 do{
                     ch[0] = in.readByte();
                     if (ch[0] != '\0'){
@@ -498,10 +498,25 @@ class client {
                     }
                 } while(ch[0] != '\0');
                 conectados = Integer.parseInt(mensajeR);
+                //System.out.println(conectados);
                 if (conectados == -1){
                     res = 3;
                 } else  {
+                    int contador= conectados *3;
+                    while(contador>0){
                     
+                     mensajeR = new String();
+                    do{
+                        ch[0] = in.readByte();
+                        if (ch[0] != '\0'){
+                            String d = new String(ch);
+                            mensajeR = mensajeR + d;
+                            
+                        }
+                    } while(ch[0] != '\0');
+                    contador--;
+                    System.out.println(mensajeR);
+                    }
                 }
             }
 
@@ -534,8 +549,80 @@ class client {
 	 */
 	static int list_content(String user_name)
 	{
-		// Write your code here
-		System.out.println("LIST_CONTENT " + user_name);
+		int res = 0;
+
+        try
+        {
+
+            // se crea el socket del cliente
+            Socket sc = new Socket(_server, _port);
+            String mensaje = "LIST_CONTENT";
+            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+            DataInputStream in = new DataInputStream(sc.getInputStream());
+        
+            out.writeBytes(mensaje);
+            out.write('\0'); // inserta el código ASCII 0 al final
+            
+            if(mensaje.equals("LIST_CONTENT")==true){
+                out.writeBytes(usuario);
+                out.write('\0'); // inserta el código ASCII 0 al final
+            }
+
+            out.writeBytes(user_name);
+            out.write('\0'); // 
+
+            byte[] ch = new byte[1];
+            String mensajeR = new String();
+            do{
+                ch[0] = in.readByte();
+                if (ch[0] != '\0'){
+                    String d = new String(ch);
+                    mensajeR = mensajeR + d;
+                }
+            } while(ch[0] != '\0');
+
+            //Se pasa a int el byte de respuesta
+            int conectados = Integer.parseInt(mensajeR);
+            
+            if(conectados == 0) {
+                mensajeR = new String();
+                do{
+                    ch[0] = in.readByte();
+                    if (ch[0] != '\0'){
+                        String d = new String(ch);
+                        mensajeR = mensajeR + d;
+                    }
+                } while(ch[0] != '\0');
+                conectados = Integer.parseInt(mensajeR);
+                //System.out.println(conectados);
+                if (conectados == -1){
+                    res = 3;
+                } else  {
+                    int contador= conectados;
+                    while(contador>0){
+                    
+                     mensajeR = new String();
+                    do{
+                        ch[0] = in.readByte();
+                        if (ch[0] != '\0'){
+                            String d = new String(ch);
+                            mensajeR = mensajeR + d;
+                            
+                        }
+                    } while(ch[0] != '\0');
+                    contador--;
+                    System.out.println(mensajeR);
+                    }
+                }
+            }
+
+        }//fin del try
+
+        catch (Exception e)
+        {
+            System.err.println("excepcion " + e.toString() );
+            e.printStackTrace();
+        }
 		return 0;
 	}
 

@@ -11,6 +11,8 @@
 #include "lines.h"
 #include <dirent.h>
 
+       #include <fcntl.h>
+
 #define MAX 256
 
 int registro(char *patata) {
@@ -169,7 +171,8 @@ int list_users_connected(char *user){
 
     char fichero[256];
     sprintf(fichero,"./ficheros/usuarios conectados/%s", user);
-    if (int fd = open(fichero) == -1) {
+	int fd = open(fichero, O_RDONLY);
+    if (fd == -1) {
         return 2;
     }
     close(fd);
@@ -204,7 +207,7 @@ int list_users(int s_local){
     if(dirp == NULL){
         return -1;
     }
-
+	int mesg2=0;
 	//Despues de enviar el número de usuarios 
     while((direntp = readdir(dirp)) != NULL){
         //char nombre[256];
@@ -214,6 +217,10 @@ int list_users(int s_local){
         fd = fopen(rutaFichero, "r");
         printf("%s\n", rutaFichero);
         
+		if ( !strcmp(direntp->d_name, ".") || !strcmp(direntp->d_name, "..") ){
+			continue;
+		}
+
         char buffer[256];
 		char puerto[6];
 		char ip[20];
@@ -232,6 +239,8 @@ int list_users(int s_local){
 			}
 			if(precoma==1 && buffer[i+1]!= ' '){
 				ip[j] = buffer[i+1];
+				j++;
+				//printf("%s", ip);
 			}
         }
 		fclose(fd);
@@ -247,6 +256,7 @@ int list_users(int s_local){
 		//se envia la ip
 		char envio2[256];
         sprintf(envio2, "%s", ip); 
+		printf("%s\n", envio2);
 		mesg2 = enviar(s_local, envio2, strlen(envio2)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
@@ -254,7 +264,8 @@ int list_users(int s_local){
 		}
 		//Se envia el puerto
 		char envio3[256];
-        sprintf(envio3, "%s", puerto); 
+        sprintf(envio3, "%s", puerto);
+		printf("%s\n", envio3); 
 		mesg2 = enviar(s_local, envio3, strlen(envio3)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
@@ -264,11 +275,48 @@ int list_users(int s_local){
 	return 0;
 }
 
-int list_contenido(char *usuario, int s_local){
+int list_contenido_connected(char *user, char *destino){
+    struct stat st = {0};
+
+    char directorio[256];
+	//comprobamos que el usuario que realiza la operacion existe
+    sprintf(directorio, "./ficheros/usuarios/%s", user);
+    if (stat(directorio, &st) == -1) {
+        return 1;
+    }
+   
+
+
+    char fichero[256];
+	//comprobamos que el usuario que realiza la operacion este conectado
+    sprintf(fichero,"./ficheros/usuarios conectados/%s", user);
+	int fd = open(fichero, O_RDONLY);
+    if (fd == -1) {
+        return 2;
+    }
+    close(fd);
+
+	char directorio2[256];
+	//comprobamos que el usuario cuyo contenido se quiere conocer existe
+    sprintf(directorio2, "./ficheros/usuarios/%s", destino);
+    if (stat(directorio2, &st) == -1) {
+        return 3;
+    }
+
+	//error en otro caso
+    if (stat("./ficheros/usuarios conectados", &st) == -1) {
+        return 4;
+    }
+
+    return 0;
+}
+
+
+int list_contenido_contador(char *usuario){
 	struct stat st = {0};
     char ruta[256];
     sprintf(ruta, "./ficheros/usuarios/%s", usuario);
-	if (stat(ruta, &st) == -1) {
+	/*if (stat(ruta, &st) == -1) {
 		return 1;// usuario no registrado
 	}
 
@@ -279,7 +327,7 @@ int list_contenido(char *usuario, int s_local){
 	if(ff == NULL){
 		return 3; //el usuario no esta conectado
 	}
-	fclose(ff);
+	fclose(ff);*/
 
     DIR *dirp;
     struct dirent *direntp;
@@ -293,21 +341,41 @@ int list_contenido(char *usuario, int s_local){
 			contador++;
 		}
 	}
+
+	return contador;
 	//enviar contador
-	char contadore[256];
+	/*char contadore[256];
 	sprintf(contadore,"%d", contador*2);// se multipiplica por 2 ya que se envian 2 parametros por fichero, para el bucle de java
 	int mesg2 = enviar(s_local, contadore, strlen(contadore)+1);
 	if(mesg2 == -1){
 		printf("error enviar2\n");
 		return 2;
-	}
+	}*/
 
+	//return 0;
+}
+
+
+int list_contenido(char *usuario, int s_local){
+	//struct stat st = {0};
+    char ruta[256];
+    sprintf(ruta, "./ficheros/usuarios/%s", usuario);
+	DIR *dirp;
+    struct dirent *direntp;
+    dirp = opendir(ruta);
+    if(dirp == NULL){
+        return 2;
+    }
+	int mesg2=0;
     while((direntp = readdir(dirp)) != NULL){
 		FILE *fd;
 		char rutaFichero2[512];
         sprintf(rutaFichero2, "./ficheros/usuarios/%s/%s", usuario, direntp->d_name);
 		fd = fopen(rutaFichero2, "r");
-        
+
+        if ( !strcmp(direntp->d_name, ".") || !strcmp(direntp->d_name, "..") ){
+			continue;
+		}
         char buffer[256];
 		//char descripcion[256];
         fread(buffer, 256, 1, fd);
@@ -329,13 +397,13 @@ int list_contenido(char *usuario, int s_local){
 			return 2;
 		}
 		//envia la descripcion
-		char envio2[256];
+		/*char envio2[256];
         sprintf(envio2, "%s", buffer); 
 		mesg2 = enviar(s_local, envio2, strlen(envio2)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
 			return 2;
-		}
+		}*/
 
 
     }

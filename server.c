@@ -232,7 +232,7 @@ void tratar_peticion (int *s) {
 	}
 	else if (0 == strcmp(inputBuff, "LIST_USERS")){
 		//pequeño printf de control		
-		printf("lista de usuarios conectados");
+		printf("lista de usuarios conectados\n");
 
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
@@ -245,6 +245,7 @@ void tratar_peticion (int *s) {
         
         int conectados = list_users_connected(usery);
         char resultado[2];
+        printf("Comprobacion inicial : %d\n", conectados);
         sprintf(resultado, "%d", conectados);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
             printf("Error al enviar\n");
@@ -253,7 +254,7 @@ void tratar_peticion (int *s) {
         
         if(conectados == 0) {
             conectados = list_users_contador();
-            
+            printf("Usuarios conectados : %d\n", conectados);
             sprintf(resultado, "%d", conectados);
             if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
                 printf("Error al enviar\n");
@@ -261,7 +262,7 @@ void tratar_peticion (int *s) {
             }
             
             if (conectados > 0) {
-                
+                int control = list_users(s_local);
             }
         }
         
@@ -273,14 +274,45 @@ void tratar_peticion (int *s) {
             printf("error2\n");
 			break;
 		}
-
+        char usery[256];
+        strcpy(usery, inputBuff);
 		//pequeño printf de control		
 		printf("lista del contenido del usuario\n");
 
+        lline = readLine(s_local, inputBuff, 256);
+        if(lline == -1){
+            printf("Error en el readLine\n");
+            break;
+        }
+        //coger el nombre de usuario
+        
+
 		int conclusion;
-		conclusion = list_contenido(inputBuff, s_local);
+		conclusion = list_contenido_connected(usery,inputBuff);
+
+        char resultado[2];
+        printf("Comprobacion inicial : %d\n", conclusion);
+        sprintf(resultado, "%d", conclusion);
+        if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
+            printf("Error al enviar\n");
+            exit(0);
+        }
+
+        if(conclusion==0){
+            conclusion = list_contenido_contador(inputBuff);
+            printf("Usuarios conectados : %d\n", conclusion);
+            sprintf(resultado, "%d", conclusion);
+            if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
+                printf("Error al enviar\n");
+                exit(0);
+            }
+
+            if (conclusion > 0) {
+                int control = list_contenido(inputBuff,s_local);
+            }
+        }
 		//ponemos en el char de enviar, registrado, para feedback de cliente
-		if(conclusion == 0){sprintf(oka, "lista de contenido");}
+		//if(conclusion == 0){sprintf(oka, "lista de contenido");}
     	
 	}
 	else if(0 == strcmp(inputBuff, "GET_FILE")){
