@@ -17,8 +17,9 @@ class TratarPeticion extends Thread{
 	}
 
 	public void run(){
-		while(true){
-			try{
+		try{
+			while(true){
+                /*
 				sc = serverSock.accept(); //esperando conexion
 
 				InputStream istream = sc.getInputStream(); //recibimos info del server
@@ -32,12 +33,86 @@ class TratarPeticion extends Thread{
 				ostream.writeInt(res);
 				ostream.flush();
 				sc.close();
-			}catch(Exception e){
-				System.err.println("exception " + e.toString());
-				e.printStackTrace();
-			}
-		}
+				*/
+				
+                Socket s_local = serverSock.accept();
+                DataOutputStream out = new DataOutputStream(s_local.getOutputStream());
+                DataInputStream in = new DataInputStream(s_local.getInputStream());
+                
+                //Lee del socket
+                // mensaje = leer(in);
+                System.out.println("Leemos el GET_FILE");
+                byte[] ch = new byte[1];
+                String mensajeR = new String();
+                do{
+                    ch[0] = in.readByte();
+                    if (ch[0] != '\0'){
+                        String d = new String(ch);
+                        mensajeR = mensajeR + d;
+                    }
+                } while(ch[0] != '\0');
+
+                //si la cadena recibida no es GET_FILE error
+                if(!mensajeR.equals("GET_FILE")){
+                    System.out.println("Error");
+                    sc.close();
+                    s_local.close();
+                    return;
+                }
+                //recibe del socket el fichero
+                //String rmt_file = leer(in);
+                System.out.println("Leemos el archivo");
+                ch = new byte[1];
+                String fichero = new String();
+                do{
+                    ch[0] = in.readByte();
+                    if (ch[0] != '\0'){
+                        String d = new String(ch);
+                        fichero = fichero + d;
+                    }
+                } while(ch[0] != '\0');
+                
+                File fd = new File(fichero);
+
+                //Si existe el fichero lo copia al socket y envia codigo 0
+                if(fd.exists() && fd.isFile()){
+                    //escribir(os, "0");
+                    System.out.println("Archivo detectado, se procede a enviar");
+                    out.writeBytes("0");
+                    out.write('\0'); // inserta el código ASCII 0 al final
+                    
+                    InputStream inp = new FileInputStream(fichero);
+                    DataInputStream inputfile = new DataInputStream(inp);
+                    copy.copyFile(inputfile, out);
+                    //cierre del fichero
+                    inputfile.close();
+                }
+                //Si no existe envia codigo 1
+                else{
+                    //escribir(os, "1");
+                    out.writeBytes("0");
+                    out.write('\0'); // inserta el código ASCII 0 al final
+                }
+                s_local.close();
+            }
+        }catch(Exception e){
+            System.err.println("exception " + e.toString());
+            e.printStackTrace();
+        }
 	}
+}
+
+//Clase usuario para almacenar en un futuro el listado de usuarios conectados
+class DUsuario{
+    String name;
+    String ip;
+    int port;
+
+    public DUsuario (String name, String ip, int port){
+        this.name = name;
+        this.ip = ip;
+        this.port = port;
+    }
 }
 
 class client {
@@ -48,6 +123,9 @@ class client {
 	private static String _server   = null;
 	private static int _port = -1;
 	private static String usuario;
+	
+	//Arraylist para guardar los datos del LIST_USERS
+    private static ArrayList<DUsuario> usuariosConectados;
 	
 	/********************* METHODS ********************/
 	
@@ -502,20 +580,45 @@ class client {
                 if (conectados == -1){
                     res = 3;
                 } else  {
-                    int contador= conectados *3;
-                    while(contador>0){
-                    
-                     mensajeR = new String();
-                    do{
-                        ch[0] = in.readByte();
-                        if (ch[0] != '\0'){
-                            String d = new String(ch);
-                            mensajeR = mensajeR + d;
-                            
-                        }
-                    } while(ch[0] != '\0');
-                    contador--;
-                    System.out.println(mensajeR);
+                    usuariosConectados = new ArrayList<DUsuario>();
+                    //int contador = conectados *3;
+                    while(conectados > 0){
+                        mensajeR = new String();
+                        do{
+                            ch[0] = in.readByte();
+                            if (ch[0] != '\0'){
+                                String d = new String(ch);
+                                mensajeR = mensajeR + d;
+                                
+                            }
+                        } while(ch[0] != '\0');
+                        String user = mensajeR;
+                        
+                        mensajeR = new String();
+                        do{
+                            ch[0] = in.readByte();
+                            if (ch[0] != '\0'){
+                                String d = new String(ch);
+                                mensajeR = mensajeR + d;
+                                
+                            }
+                        } while(ch[0] != '\0');
+                        String ip = mensajeR;
+                        
+                        mensajeR = new String();
+                        do{
+                            ch[0] = in.readByte();
+                            if (ch[0] != '\0'){
+                                String d = new String(ch);
+                                mensajeR = mensajeR + d;
+                                
+                            }
+                        } while(ch[0] != '\0');
+                        String puerto = mensajeR;
+                        
+                        System.out.printf("%10s%10s%10s\n", user, ip, puerto);
+                        usuariosConectados.add(new DUsuario(user, ip, Integer.parseInt(puerto)));
+                        conectados--;
                     }
                 }
             }
@@ -635,9 +738,94 @@ class client {
 	 */
 	static int get_file(String user_name, String remote_file_name, String local_file_name)
 	{
-		// Write your code here
-		System.out.println("GET_FILE " + user_name + " "  + remote_file_name + " " + local_file_name);
-		return 0;
+        int res = 3;
+        try{
+            //Comprobamos si hay usuarios conectados
+            if(usuariosConectados.isEmpty()) {
+                System.out.println("c> GET_FILE FAIL");
+                return 2;
+            }
+            else{
+                int contador = 0;
+                while(contador < usuariosConectados.size()){
+                    if(usuariosConectados.get(contador).name.equals(user_name)) {
+                        break;
+                    } else {
+                        contador++;
+                    }
+                }
+                //Si no encuentra al usuario devuelve 2 e imprime el siguiente error
+                if(contador == usuariosConectados.size()) {
+                    System.out.println("c> GET_FILE FAIL");
+                    return 2;
+                }
+
+                //almacenamos la ip y el puerto del usuario encontrado
+                String ip = usuariosConectados.get(contador).ip;
+                int port = usuariosConectados.get(contador).port;
+                
+                //creacion del socket
+                Socket sc = new Socket(ip, port);
+                DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+                DataInputStream in = new DataInputStream(sc.getInputStream());
+                
+                System.out.println("Enviamos el GET_FILE");
+                String mensaje = "GET_FILE";
+                out.writeBytes(mensaje);
+                out.write('\0'); // inserta el código ASCII 0 al final
+            
+                System.out.println("Enviamos el nombre del fichero remoto");
+                if(mensaje.equals("LIST_CONTENT")==true){
+                    out.writeBytes(remote_file_name);
+                    out.write('\0'); // inserta el código ASCII 0 al final
+                }
+                System.out.println(remote_file_name);
+
+                //introducimos un sleep para darle tiempo al servidor local a enviar la respuesta antes de leerla
+                Thread.sleep(500);
+                
+                System.out.println("Recibimos la respuesta");
+                byte[] ch = new byte[1];
+                String mensajeR = new String();
+                do{
+                    ch[0] = in.readByte();
+                    if (ch[0] != '\0'){
+                        String d = new String(ch);
+                        mensajeR = mensajeR + d;
+                    }
+                } while(ch[0] != '\0');
+
+                //Se pasa a int
+                res = Integer.parseInt(mensajeR);
+                
+                //si el resultado es 0, copiamos el fichero remoto del socket al fichero local
+                if(res == 0){
+                    //introducimos un sleep para dar tiempo al servidor de que comience a enviar el fichero
+                    Thread.sleep(500);
+                    // abrimos un file para escribir
+                    OutputStream outFile = new FileOutputStream(local_file_name);
+                    DataOutputStream outputfile = new DataOutputStream(outFile);
+                    // leemos del socket y escribimos en el file
+                    copy.copyFile(in, outputfile);
+                    //cerramos el fichero 
+                    outputfile.close();
+                }
+            }
+            
+        }
+        catch(Exception e){
+            System.err.println("excepcion " + e.toString());
+            res = 2;
+        }
+        if(res == 0){
+            System.out.println("c> GET_FILE OK");
+        } else if(res == 1){
+            System.out.println("c> GET_FILE FAIL, FILE DOES NOT EXIST");
+        } else {
+            System.out.println("c> GET_FILE FAIL");
+        }
+        
+        return res;
 	}
 
 	
@@ -814,21 +1002,26 @@ class client {
 
 		return true;
 	}
-	
-	
+
 	
 	/********************* MAIN **********************/
 	
 	public static void main(String[] argv) 
 	{
-		if(!parseArguments(argv)) {
-			usage();
-			return;
-		}
-		
-		// Write code here
-		
-		shell();
-		System.out.println("+++ FINISHED +++");
-	}
+        if(!parseArguments(argv)) {
+            usage();
+            return;
+        }
+        System.out.println("Host: "+_server+" Port: "+ _port);
+        System.out.println("To quit type: 'QUIT' or press Ctrl+C\n");
+        
+        try{
+            //iniciamos la shell
+            shell();
+            System.out.println("+++ FINISHED +++");
+        }
+        catch(Exception e){
+            System.out.println("+++ FINISHED +++");
+        }
+    }
 }
