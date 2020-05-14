@@ -471,7 +471,7 @@ class client {
             out.write('\0'); // inserta el código ASCII 0 al final
             
             if(mensaje.equals("LIST_USERS")==true){
-                //out.writeBytes(user);
+                out.writeBytes(user);
                 out.write('\0'); // inserta el código ASCII 0 al final
             }
 
@@ -486,10 +486,24 @@ class client {
             } while(ch[0] != '\0');
 
             //Se pasa a int
-            res = Integer.parseInt(mensajeR);
+            int conectados = Integer.parseInt(mensajeR);
             
-            //Se cierra la conexión
-            //sc.close();
+            if(conectados == 0) {
+                String mensajeR = new String();
+                do{
+                    ch[0] = in.readByte();
+                    if (ch[0] != '\0'){
+                        String d = new String(ch);
+                        mensajeR = mensajeR + d;
+                    }
+                } while(ch[0] != '\0');
+                conectados = Integer.parseInt(mensajeR);
+                if (conectados == -1){
+                    res = 3;
+                } else  {
+                    
+                }
+            }
 
         }//fin del try
 

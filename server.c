@@ -46,7 +46,7 @@ void tratar_peticion (int *s) {
         char inputBuff[256];
         int lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("error2\n");
+            printf("Error readLine tratar petición\n");
 	    break;
             
         }
@@ -234,11 +234,38 @@ void tratar_peticion (int *s) {
 		//pequeño printf de control		
 		printf("lista de usuarios conectados");
 
-		int conclusion;
-		conclusion = list_users(s_local);
-		//ponemos en el char de enviar, registrado, para feedback de cliente
-		if(conclusion == 0){sprintf(oka, "listado de usuarios");}
-    	
+        lline = readLine(s_local, inputBuff, 256);
+        if(lline == -1){
+            printf("Error en el readLine\n");
+            break;
+        }
+        //coger el nombre de usuario
+        char usery[256];
+        strcpy(usery, inputBuff);
+        
+        int conectados = list_users_connected(usery);
+        char resultado[2];
+        sprintf(resultado, "%d", conectados);
+        if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
+            printf("Error al enviar\n");
+            exit(0);
+        }
+        
+        if(conectados == 0) {
+            conectados = list_users_contador();
+            
+            sprintf(resultado, "%d", conectados);
+            if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
+                printf("Error al enviar\n");
+                exit(0);
+            }
+            
+            if (conectados > 0) {
+                
+            }
+        }
+        
+        
 	}
 	else if(0 == strcmp(inputBuff, "LIST_CONTENT")){
         lline = readLine(s_local, inputBuff, 256);

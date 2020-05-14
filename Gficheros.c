@@ -18,10 +18,16 @@ int registro(char *patata) {
 	struct stat st = {0};
 
 	if (stat("./ficheros", &st) == -1) {
-		mkdir("./ficheros", 0777);
+		if (mkdir("./ficheros", 0777) != 0) {
+            return 2;
+        }
 	}
-
-	mkdir("./ficheros/usuarios", 0777);
+    
+    if (stat("./ficheros/usuarios", &st) == -1) {
+		if (mkdir("./ficheros/usuarios", 0777) != 0) {
+            return 2;
+        }
+	}
 
 	char usuario[256];
 	sprintf(usuario,"./ficheros/usuarios/%s", patata);
@@ -30,7 +36,9 @@ int registro(char *patata) {
 		return 1;
 	}
 	if (stat(usuario, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
-		mkdir(usuario, 0777);
+		if (mkdir(usuario, 0777) != 0) {
+            return 2;
+        }
 	}
 	return 0;
 	
@@ -146,6 +154,47 @@ int desconectar(char *usuario){
 	return 0;
 }
 
+int list_users_connected(char *user){
+    struct stat st = {0};
+
+    char directorio[256];
+    sprintf(directorio, "./ficheros/usuarios/%s", user);
+    if (stat(directorio, &st) == -1) {
+        return 1;
+    }
+    //crear directorio de usuarios conectados
+    if (stat("./ficheros/usuarios conectados", &st) == -1) {
+        return 3;
+    }
+
+    char fichero[256];
+    sprintf(fichero,"./ficheros/usuarios conectados/%s", user);
+    if (int fd = open(fichero) == -1) {
+        return 2;
+    }
+    close(fd);
+    return 0;
+}
+
+int list_users_contador() {
+    char ruta[256];
+    sprintf(ruta, "./ficheros/usuarios conectados");
+    DIR *dirp;
+    struct dirent *direntp;
+    dirp = opendir(ruta);
+    if(dirp == NULL){
+        return -1;
+    }
+
+    int contador = 0;
+    while((direntp = readdir(dirp)) != NULL){
+        if(direntp->d_type == DT_REG){
+            contador++;
+        }
+    }
+    return contador;
+}
+
 int list_users(int s_local){
     char ruta[256];
     sprintf(ruta, "./ficheros/usuarios conectados");
@@ -153,30 +202,17 @@ int list_users(int s_local){
     struct dirent *direntp;
     dirp = opendir(ruta);
     if(dirp == NULL){
-        return 2;
+        return -1;
     }
 
-	int contador = 0;
-	while((direntp = readdir(dirp)) != NULL){
-		if(direntp->d_type == DT_REG){
-			contador++;
-		}
-	}
-	//enviar contador
-	char contadore[256];
-	sprintf(contadore,"%d", contador*3); //se envian tres parametros por cliente
-	int mesg2 = enviar(s_local, contadore, strlen(contadore)+1);
-	if(mesg2 == -1){
-		printf("error enviar2\n");
-		return 2;
-	}
-
+	//Despues de enviar el número de usuarios 
     while((direntp = readdir(dirp)) != NULL){
         //char nombre[256];
         FILE *fd;
         char rutaFichero[512];
         sprintf(rutaFichero, "./ficheros/usuarios conectados/%s", direntp->d_name);
         fd = fopen(rutaFichero, "r");
+        printf("%s\n", rutaFichero);
         
         char buffer[256];
 		char puerto[6];
@@ -202,6 +238,7 @@ int list_users(int s_local){
 		//se envia el nombre
         char envio1[256];
         sprintf(envio1, "%s", direntp->d_name); 
+        printf("%s\n", envio1);
 		mesg2 = enviar(s_local, envio1, strlen(envio1)+1);
 		if(mesg2 == -1){
 			printf("error enviar2\n");
@@ -223,12 +260,7 @@ int list_users(int s_local){
 			printf("error enviar2\n");
 			return 2;
 		}
-
-
     }
-    
-    
-
 	return 0;
 }
 
