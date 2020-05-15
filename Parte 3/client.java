@@ -6,6 +6,11 @@ import java.io.* ;
 import java.net.* ;
 import java.util.* ;
 
+import java.net.URL;
+import client.Mayus.MayusServiceService;
+import client.Mayus.MayusService;
+import java.util.List;
+
 class copy {
     static void copyFile(DataInputStream inputStream, DataOutputStream outputStream) throws IOException {
         try {
@@ -441,7 +446,15 @@ class client {
                 out.write('\0');
                 out.writeBytes(file_name);
                 out.write('\0'); // inserta el código ASCII 0 al final
-                out.writeBytes(description);
+                
+                //Se llama al servicio web para pasar la cadena descripción a mayúsculas
+                URL url = new URL("http://localhost:8888/Mayus");
+                MayusServiceServiceservice = new MayusServiceService(url);
+                MayusServiceport = service.getMayusServicePort();
+                
+                String descripcionMAYUS = port.toUpper(description);
+                
+                out.writeBytes(descriptionMAYUS);
                 out.write('\0');
             }
             
