@@ -23,20 +23,19 @@ class copy {
 }
 
 class TratarPeticion extends Thread{
-	private ServerSocket serverSock;
-	private	Socket sc = null;
-	private	int num[];  //peticion
-	private	int res;
+	private ServerSocket sc;
+	//private	Socket sc = null;
+	//private	int res;
 
-	TratarPeticion(ServerSocket a){
-		serverSock = a;
+	public TratarPeticion(ServerSocket a){
+		sc = a;
 	}
 
 
     public void run(){
         try{
             while(true){
-                Socket s_local = serverSock.accept();
+                Socket s_local = sc.accept();
                 DataOutputStream out = new DataOutputStream(s_local.getOutputStream());
                 DataInputStream in = new DataInputStream(s_local.getInputStream());
                 
@@ -95,6 +94,17 @@ class TratarPeticion extends Thread{
             e.printStackTrace();
         }
     }
+    
+    public void PararSSC(){
+        try{
+            sc.close();
+        }
+        catch(SocketException e) {}	
+        catch(Exception e){
+            System.err.println("excepcion "+ e.toString());
+            e.printStackTrace();
+        }
+    }
 }
 
 //Clase usuario para almacenar en un futuro el listado de usuarios conectados
@@ -118,6 +128,7 @@ class client {
 	private static String _server   = null;
 	private static int _port = -1;
 	private static String usuario;
+	private static TratarPeticion sthread = null;
 	
 	//Arraylist para guardar los datos del LIST_USERS
     private static ArrayList<DUsuario> usuariosConectados;
@@ -278,6 +289,11 @@ class client {
             DataOutputStream out = new DataOutputStream(sc.getOutputStream());
             DataInputStream in = new DataInputStream(sc.getInputStream());
         
+        
+            //Se crea el server socket para el GET_FILE
+            ServerSocket ssc = new ServerSocket(0);
+            int npuerto = ssc.getLocalPort();
+        
             out.writeBytes(mensaje);
             out.write('\0'); // inserta el código ASCII 0 al final
             
@@ -304,9 +320,10 @@ class client {
             //Se pasa a int
             res = Integer.parseInt(mensajeR);
             
-            //Se cierra la conexión
-            //sc.close();
-
+            if (res == 0){
+                sthread = new TratarPeticion(ssc);
+                sthread.start();
+            }
         }//fin del try
 
         catch (Exception e)
@@ -365,6 +382,8 @@ class client {
             //Se pasa a int
             res = Integer.parseInt(mensajeR);
             
+            usuariosConectados = new ArrayList<DUsuario>(); //Esta lista ya no nos sirve pues está desactualizada
+            
             //Se cierra la conexión
             //sc.close();
 
@@ -372,11 +391,22 @@ class client {
 
         catch (Exception e)
         {
+            //Ha fallado la desconexión, debemos resetear la lista de usuarios, el usuario conectado y el thread para GET_FILE
             System.err.println("excepcion " + e.toString() );
             e.printStackTrace();
+            usuariosConectados = new ArrayList<DUsuario>();
+            res = 3;
+            if(sthread != null){
+                sthread.PararSSC();
+                sthread = null;
+                usuario = null;
+            }
         }
         
         if(res == 0){
+            sthread.PararSSC();
+            sthread = null;
+            usuario = null;
             System.out.println("c> DISCONNECT OK");
         } else if(res == 1){
             System.out.println("c> DISCONNECT FAIL / USER DOES NOT EXIST");
@@ -1000,11 +1030,24 @@ class client {
 		return true;
 	}
 
+    static public void attachCTRLC(){
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                if(sthread != null){
+                    System.out.println("\n+++ DISCONNECTING +++");
+                    disconnect(usuario);
+                }
+            }
+        });
+    }
 	
 	/********************* MAIN **********************/
 	
 	public static void main(String[] argv) 
 	{
+        attachCTRLC();
+        
         if(!parseArguments(argv)) {
             usage();
             return;
@@ -1015,6 +1058,11 @@ class client {
         try{
             //iniciamos la shell
             shell();
+            //si el server esta activo lo desactiva
+            if(sthread != null){
+                System.out.println("\n+++ DISCONNECTING +++");
+                disconnect(usuario);	//Desconectamos al usuario para proteger la base de datos
+            }
             System.out.println("+++ FINISHED +++");
         }
         catch(Exception e){
