@@ -300,11 +300,7 @@ void tratar_peticion (int *s) {
             }
         }
 	}
-	else if(0 == strcmp(inputBuff, "GET_FILE")){
-		sprintf(oka, "archivo obtenido");
-	}
-
-        int mesg2 = enviar(s_local, oka, strlen(oka)+1);
+    int mesg2 = enviar(s_local, oka, strlen(oka)+1);
         if(mesg2 == -1){
             printf("error enviar2\n");
             break;
