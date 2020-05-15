@@ -17,31 +17,14 @@ class TratarPeticion extends Thread{
 	}
 
 
-	public void run(){
-		try{
-			while(true){
-                
-// 				sc = serverSock.accept(); //esperando conexion
-// 
-// 				InputStream istream = sc.getInputStream(); //recibimos info del server
-// 				ObjectInput in = new ObjectInputStream(istream); //lo transformamos a algo legible para java
-// 
-// 				num = (int[]) in.readObject();
-// 				res = num[0] + num[1];
-// 
-// 				DataOutputStream ostream = new DataOutputStream(sc.getOutputStream());
-// 
-// 				ostream.writeInt(res);
-// 				ostream.flush();
-// 				sc.close();
-// 				
-				
+    public void run(){
+        try{
+            while(true){
                 Socket s_local = serverSock.accept();
                 DataOutputStream out = new DataOutputStream(s_local.getOutputStream());
                 DataInputStream in = new DataInputStream(s_local.getInputStream());
                 
                 //Lee del socket
-                // mensaje = leer(in);
                 System.out.println("Leemos el GET_FILE");
                 byte[] ch = new byte[1];
                 String mensajeR = new String();
@@ -61,7 +44,6 @@ class TratarPeticion extends Thread{
                     return;
                 }
                 //recibe del socket el fichero
-                //String rmt_file = leer(in);
                 System.out.println("Leemos el archivo");
                 String fichero = new String();
                 do{
@@ -77,7 +59,6 @@ class TratarPeticion extends Thread{
 
                 //Si existe el fichero lo copia al socket y envia codigo 0
                 if(fd.exists() && fd.isFile()){
-                    //escribir(os, "0");
                     System.out.println("Archivo detectado, se procede a enviar");
                     out.writeBytes("0");
                     out.write('\0'); // inserta el código ASCII 0 al final
@@ -87,11 +68,8 @@ class TratarPeticion extends Thread{
                     copy.copyFile(inputfile, out);
                     //cierre del fichero
                     inputfile.close();
-                }
-                //Si no existe envia codigo 1
-                else{
-                    //escribir(os, "1");
-                    out.writeBytes("0");
+                } else{
+                    out.writeBytes("1");
                     out.write('\0'); // inserta el código ASCII 0 al final
                 }
                 s_local.close();
@@ -100,31 +78,7 @@ class TratarPeticion extends Thread{
             System.err.println("exception " + e.toString());
             e.printStackTrace();
         }
-	}
-/*
-    public void run(){
-        while(true){
-            try{
-                sc = serverSock.accept(); //esperando conexion
-
-                InputStream istream = sc.getInputStream(); //recibimos info del server
-                ObjectInput in = new ObjectInputStream(istream); //lo transformamos a algo legible para java
-
-                num = (int[]) in.readObject();
-                res = num[0] + num[1];
-
-                DataOutputStream ostream = new DataOutputStream(sc.getOutputStream());
-
-                ostream.writeInt(res);
-                ostream.flush();
-                sc.close();
-            }catch(Exception e){
-                System.err.println("exception " + e.toString());
-                e.printStackTrace();
-            }
-        }
     }
-    */
 }
 
 //Clase usuario para almacenar en un futuro el listado de usuarios conectados
@@ -809,7 +763,7 @@ class client {
                 System.out.println(remote_file_name);
 
                 //introducimos un sleep para darle tiempo al servidor local a enviar la respuesta antes de leerla
-                //Thread.sleep(5000);
+                //Thread.sleep(500);
                 
                 System.out.println("Recibimos la respuesta");
                 byte[] ch = new byte[1];
@@ -828,7 +782,7 @@ class client {
                 //si el resultado es 0, copiamos el fichero remoto del socket al fichero local
                 if(res == 0){
                     //introducimos un sleep para dar tiempo al servidor de que comience a enviar el fichero
-                    //Thread.sleep(500);
+                    Thread.sleep(500);
                     // abrimos un file para escribir
                     OutputStream outFile = new FileOutputStream(local_file_name);
                     DataOutputStream outputfile = new DataOutputStream(outFile);
@@ -836,18 +790,7 @@ class client {
                     copy.copyFile(in, outputfile);
                     //cerramos el fichero 
                     outputfile.close();
-                }
-                
-                /*
-                OutputStream out = new OutputStream(sc.getOutputStream());
-                ObjectOutput s = new ObjectoutputStream(out);
-                InputStream in = new InputStream(sc.getInputStream());
-                
-                System.out.println("Enviamos el GET_FILE");
-                String mensaje = "GET_FILE";
-                s.writeObject(mensaje);
-                */
-                
+                }                
             }
             
         }
