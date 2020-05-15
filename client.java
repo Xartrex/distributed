@@ -24,13 +24,10 @@ class copy {
 
 class TratarPeticion extends Thread{
 	private ServerSocket sc;
-	//private	Socket sc = null;
-	//private	int res;
 
 	public TratarPeticion(ServerSocket a){
 		sc = a;
 	}
-
 
     public void run(){
         try{
@@ -87,9 +84,12 @@ class TratarPeticion extends Thread{
                     out.writeBytes("1");
                     out.write('\0'); // inserta el código ASCII 0 al final
                 }
+                System.out.print("c> ");
+                
                 s_local.close();
             }
-        }catch(Exception e){
+        }catch(SocketException e) {}
+        catch(Exception e){
             System.err.println("exception " + e.toString());
             e.printStackTrace();
         }
@@ -99,7 +99,7 @@ class TratarPeticion extends Thread{
         try{
             sc.close();
         }
-        catch(SocketException e) {}	
+        catch(SocketException e) {}
         catch(Exception e){
             System.err.println("excepcion "+ e.toString());
             e.printStackTrace();
@@ -269,14 +269,14 @@ class client {
         // Write your code here
         System.out.println("CONNECT " + user);
 
-        ServerSocket serverSock = null;
+        ServerSocket ssc = null;
         try{
-            serverSock = new ServerSocket(0); //nos devuelve el socket que quiera
-            new TratarPeticion(serverSock).start();
+            ssc = new ServerSocket(0); //nos devuelve el socket que quiera
+            new TratarPeticion(ssc).start();
         }catch(Exception e){
             System.err.println("Error cerrandi socket");
         }
-        int puerto = serverSock.getLocalPort();
+        int puerto = ssc.getLocalPort();
         String port = Integer.toString(puerto);
         
         int res = 3;
@@ -288,11 +288,6 @@ class client {
             String mensaje = "CONNECT";
             DataOutputStream out = new DataOutputStream(sc.getOutputStream());
             DataInputStream in = new DataInputStream(sc.getInputStream());
-        
-        
-            //Se crea el server socket para el GET_FILE
-            ServerSocket ssc = new ServerSocket(0);
-            int npuerto = ssc.getLocalPort();
         
             out.writeBytes(mensaje);
             out.write('\0'); // inserta el código ASCII 0 al final
@@ -404,6 +399,7 @@ class client {
         }
         
         if(res == 0){
+            System.out.println("Eliminate bicho");
             sthread.PararSSC();
             sthread = null;
             usuario = null;
@@ -807,9 +803,6 @@ class client {
                     out.write('\0'); // inserta el código ASCII 0 al final
                 }
                 System.out.println(remote_file_name);
-
-                //introducimos un sleep para darle tiempo al servidor local a enviar la respuesta antes de leerla
-                //Thread.sleep(500);
                 
                 System.out.println("Recibimos la respuesta");
                 byte[] ch = new byte[1];
@@ -827,8 +820,6 @@ class client {
                 
                 //si el resultado es 0, copiamos el fichero remoto del socket al fichero local
                 if(res == 0){
-                    //introducimos un sleep para dar tiempo al servidor de que comience a enviar el fichero
-                    Thread.sleep(500);
                     // abrimos un file para escribir
                     OutputStream outFile = new FileOutputStream(local_file_name);
                     DataOutputStream outputfile = new DataOutputStream(outFile);
@@ -1061,7 +1052,7 @@ class client {
             //si el server esta activo lo desactiva
             if(sthread != null){
                 System.out.println("\n+++ DISCONNECTING +++");
-                disconnect(usuario);	//Desconectamos al usuario para proteger la base de datos
+                disconnect(usuario);
             }
             System.out.println("+++ FINISHED +++");
         }
