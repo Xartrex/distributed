@@ -190,11 +190,7 @@ void tratar_peticion (int *s) {
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
             printf("Error al enviar\n");
             exit(0);
-        }
-        
-        //ponemos en el char de enviar, registrado, para feedback de cliente
-        //if(conclusion == 0){sprintf(oka, "publicado");}
-            
+        }            
 	}
 	else if(0 == strcmp(inputBuff, "DELETE")){
 
@@ -216,23 +212,20 @@ void tratar_peticion (int *s) {
         char name[256];
         strcpy(name, inputBuff);
 
-		//pequeño printf de control		
-		printf("eliminar contenido del usuario");
+        //pequeño printf de control		
+        printf("eliminar contenido del usuario");
 
-		int conclusion = borrar(name, usery);
+        int conclusion = borrar(name, usery);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
             printf("Error al enviar\n");
             exit(0);
         }
-        //ponemos en el char de enviar, registrado, para feedback de cliente
-		//if(conclusion == 0){sprintf(oka, "eliminado");}
-    	
 	}
 	else if (0 == strcmp(inputBuff, "LIST_USERS")){
-		//pequeño printf de control		
-		printf("lista de usuarios conectados\n");
+        //pequeño printf de control		
+        printf("lista de usuarios conectados\n");
 
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
@@ -262,33 +255,28 @@ void tratar_peticion (int *s) {
             }
             
             if (conectados > 0) {
-                int control = list_users(s_local);
+                list_users(s_local);
             }
         }
-        
-        
-	}
+    }
 	else if(0 == strcmp(inputBuff, "LIST_CONTENT")){
         lline = readLine(s_local, inputBuff, 256);
-	    if(lline == -1){
+        if(lline == -1){
             printf("error2\n");
-			break;
-		}
+            break;
+        }
         char usery[256];
         strcpy(usery, inputBuff);
-		//pequeño printf de control		
-		printf("lista del contenido del usuario\n");
+        //pequeño printf de control		
+        printf("lista del contenido del usuario\n");
 
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
             printf("Error en el readLine\n");
             break;
         }
-        //coger el nombre de usuario
         
-
-		int conclusion;
-		conclusion = list_contenido_connected(usery,inputBuff);
+        int conclusion = list_contenido_connected(usery,inputBuff);
 
         char resultado[2];
         printf("Comprobacion inicial : %d\n", conclusion);
@@ -308,12 +296,9 @@ void tratar_peticion (int *s) {
             }
 
             if (conclusion > 0) {
-                int control = list_contenido(inputBuff,s_local);
+                list_contenido(inputBuff,s_local);
             }
         }
-		//ponemos en el char de enviar, registrado, para feedback de cliente
-		//if(conclusion == 0){sprintf(oka, "lista de contenido");}
-    	
 	}
 	else if(0 == strcmp(inputBuff, "GET_FILE")){
 		sprintf(oka, "archivo obtenido");
@@ -322,8 +307,7 @@ void tratar_peticion (int *s) {
         int mesg2 = enviar(s_local, oka, strlen(oka)+1);
         if(mesg2 == -1){
             printf("error enviar2\n");
-	    	break;
-           
+            break;
         }        
     }//fin del for infinito, fin de conexion
 
