@@ -63,7 +63,6 @@ class TratarPeticion extends Thread{
                         fichero = fichero + d;
                     }
                 } while(ch[0] != '\0');
-                fichero = "/ficheros/usuarios/" + fichero;
                 File fd = new File(fichero);
 
                 //Si existe el fichero lo copia al socket y envia codigo 0
@@ -80,7 +79,6 @@ class TratarPeticion extends Thread{
                     out.writeBytes("1");
                     out.write('\0'); // inserta el código ASCII 0 al final
                 }
-                System.out.print("c> ");
                 
                 s_local.close();
             }
@@ -664,7 +662,6 @@ class client {
                     if (conectados == -1){
                         res = 3;
                     } else  {
-                        System.out.println("c> LIST_CONTENT OK");
                         int contador= conectados;
                         while(contador>0){
                         
