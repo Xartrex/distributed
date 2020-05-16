@@ -121,9 +121,6 @@ int conectar(char *usuario, int s_local, char *puerto) {
 
 int publicar(char *descripcion, char *nombre, char *usuario){
 
-    if(usuario == NULL){//usuario no conectado
-    	return 2;
-    }	
     //coger ruta del fichero
     char fichero[256];
     sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario, nombre);

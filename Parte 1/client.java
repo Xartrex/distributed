@@ -9,7 +9,6 @@ import java.util.* ;
 class copy {
     static void copyFile(DataInputStream inputStream, DataOutputStream outputStream) throws IOException {
         try {
-	System.out.println("Hey class copy");
             byte[] buffer = new byte[1024];
             int length = 0;
             while ((length = inputStream.read(buffer)) > 0) {
@@ -129,6 +128,7 @@ class client {
 	private static String _server   = null;
 	private static int _port = -1;
 	private static String usuario;
+	private static boolean registrado;
 	private static TratarPeticion sthread = null;
 	
 	//Arraylist para guardar los datos del LIST_USERS
@@ -281,7 +281,7 @@ class client {
             ssc = new ServerSocket(0); //nos devuelve el socket que quiera
             new TratarPeticion(ssc).start();
         }catch(Exception e){
-            System.err.println("Error cerrandi socket");
+            System.err.println("Error cerrando socket");
         }
         int puerto = ssc.getLocalPort();
         String port = Integer.toString(puerto);
@@ -313,7 +313,6 @@ class client {
 		    //ya está conectado un usuario desde esa terminal
 	    }
 	    else{
-		    //System.out.println("No habia conexion previa");
 		    //mete en la variable global el usuario conectado, uno por terminal a la vez
 		    usuario = user;
 
