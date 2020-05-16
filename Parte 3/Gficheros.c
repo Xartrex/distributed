@@ -68,19 +68,18 @@ int baja(char *patata) {
 
 int conectar(char *usuario, int s_local, char *puerto) {
     struct stat st = {0};
-    //crear directorio raiz
+    //crear directorio raiz si no esta creado
     if (stat("./ficheros", &st) == -1) {
         mkdir("./ficheros", 0777);
         return 1; //el usuario no existe
     }
-    //crear directorio de usuarios conectados
+    //crear directorio de usuarios conectados si no esta creado
     if (stat("./ficheros/usuarios conectados", &st) == -1) {
         mkdir("./ficheros/usuarios conectados", 0777);
     }
 
     char patata[256];
     sprintf(patata,"./ficheros/usuarios/%s", usuario);
-
 
     // ./ficheros/Usuaro1 si no existe es que no esta registrado
     if (stat(patata, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
@@ -89,6 +88,12 @@ int conectar(char *usuario, int s_local, char *puerto) {
 
     char conexion[256];
     sprintf(conexion,"./ficheros/usuarios conectados/%s", usuario);
+
+    //el usuario ya está conectado desde otra terminal
+    int ff = open(conexion, O_RDONLY);
+    if( ff > 0){
+	    return 2;
+    }
 
     if (stat(patata, &st) == 0) { //poner comprobacion de si ya esta registrado con == 0
         FILE *fd;
@@ -108,7 +113,7 @@ int conectar(char *usuario, int s_local, char *puerto) {
         }
 
         //escribe el puerto en el fichero
-        fprintf(fd, "%s,%s", puerto,clientip);
+        fprintf(fd, "%s,%s", puerto, clientip);
 
         fclose(fd);
     }
@@ -117,9 +122,19 @@ int conectar(char *usuario, int s_local, char *puerto) {
 }
 
 int publicar(char *descripcion, char *nombre, char *usuario){
+
+    if(0 == strcmp(usuario, "#")){
+	    return 2;
+    }//user not connected
+
     //coger ruta del fichero
     char fichero[256];
     sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario, nombre);
+
+    struct stat st = {0};
+    if (stat(fichero, &st) == 0) {//el fichero ya está publicado
+        return 3;
+    }
     printf("Print del Gficheros: %s\n", usuario);
     FILE *fd;
     fd = fopen(fichero, "w+");
@@ -130,9 +145,31 @@ int publicar(char *descripcion, char *nombre, char *usuario){
 }
 
 int borrar(char *nombre, char *usuario){
+    struct stat st = {0};
+
+    if(0 == strcmp(usuario, "#")){
+	    return 2;
+    }//user not connected
+
+    //crear directorio raiz si no esta creado
+    if (stat("./ficheros", &st) == -1) {
+        return 4; //el usuario no existe
+    }
+    char patata[256];
+    sprintf(patata,"./ficheros/usuarios/%s", usuario);
+
+    // ./ficheros/Usuaro1 si no existe es que no esta registrado
+    if (stat(patata, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
+        return 1; //el usuario no existe
+    }
     //coger ruta del fichero
     char fichero[256];
     sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario, nombre);
+
+
+    if (stat(fichero, &st) == -1) {
+        return 3;
+    }
     printf(fichero);
 
     remove(fichero);
@@ -141,9 +178,26 @@ int borrar(char *nombre, char *usuario){
 }
 
 int desconectar(char *usuario){
+    
+    struct stat st = {0};
+    if (stat("./ficheros", &st) == -1) {
+        return 3;
+    }
+    char patata[256];
+    sprintf(patata,"./ficheros/usuarios/%s", usuario);
+    // ./ficheros/Usuaro1
+    if (stat(patata, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
+        return 1;
+    }
+
     //coger ruta del fichero
     char fichero[256];
     sprintf(fichero,"./ficheros/usuarios conectados/%s", usuario);
+
+
+    if (stat(fichero, &st) == -1) {
+        return 2;
+    }
 
     remove(fichero);
     
@@ -151,6 +205,11 @@ int desconectar(char *usuario){
 }
 
 int list_users_connected(char *user){
+
+    if(0 == strcmp(user, "#")){
+	    return 2;
+    }//user not connected
+
     struct stat st = {0};
 
     char directorio[256];
@@ -272,6 +331,8 @@ int list_users(int s_local){
 }
 
 int list_contenido_connected(char *user, char *destino){
+
+
     struct stat st = {0};
 
     char directorio[256];
@@ -294,6 +355,7 @@ int list_contenido_connected(char *user, char *destino){
     //comprobamos que el usuario cuyo contenido se quiere conocer existe
     sprintf(directorio2, "./ficheros/usuarios/%s", destino);
     if (stat(directorio2, &st) == -1) {
+	    printf("User no existe\n");
         return 3;
     }
 
@@ -307,6 +369,7 @@ int list_contenido_connected(char *user, char *destino){
 
 
 int list_contenido_contador(char *usuario){
+
     char ruta[256];
     sprintf(ruta, "./ficheros/usuarios/%s", usuario);
 
@@ -314,7 +377,7 @@ int list_contenido_contador(char *usuario){
     struct dirent *direntp;
     dirp = opendir(ruta);
     if(dirp == NULL){
-        return 2;
+        return 1;
     }
     int contador = 0;
     while((direntp = readdir(dirp)) != NULL){
@@ -328,13 +391,17 @@ int list_contenido_contador(char *usuario){
 
 
 int list_contenido(char *usuario, int s_local){
+    if(0 == strcmp(usuario, "#")){
+	    return 2;
+    }//user not connected
+
     char ruta[256];
     sprintf(ruta, "./ficheros/usuarios/%s", usuario);
     DIR *dirp;
     struct dirent *direntp;
     dirp = opendir(ruta);
     if(dirp == NULL){
-        return 2;
+        return 1;
     }
     
     int mesg2=0;

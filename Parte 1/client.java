@@ -6,6 +6,7 @@ import java.io.* ;
 import java.net.* ;
 import java.util.* ;
 
+//Clase copia, ejemplo de aula global modificado para ser implantado en la práctica.
 class copy {
     static void copyFile(DataInputStream inputStream, DataOutputStream outputStream) throws IOException {
         try {
@@ -22,6 +23,7 @@ class copy {
     }
 }
 
+//Clase para la parte servidor del cliente.
 class TratarPeticion extends Thread{
 	private ServerSocket sc;
 
@@ -32,12 +34,12 @@ class TratarPeticion extends Thread{
     public void run(){
         try{
             while(true){
+                //Se incializa el socket
                 Socket s_local = sc.accept();
                 DataOutputStream out = new DataOutputStream(s_local.getOutputStream());
                 DataInputStream in = new DataInputStream(s_local.getInputStream());
                 
                 //Lee del socket
-
                 byte[] ch = new byte[1];
                 String mensajeR = new String();
                 do{
@@ -47,14 +49,13 @@ class TratarPeticion extends Thread{
                         mensajeR = mensajeR + d;
                     }
                 } while(ch[0] != '\0');
-                //si la cadena recibida no es GET_FILE error
+                //Comprobamos la cadena recibida (GET_FILE)
                 if(!mensajeR.equals("GET_FILE")){
-                    System.out.println("Error");
                     sc.close();
                     s_local.close();
                     return;
                 }
-                //recibe del socket el fichero
+                //Recibe el nombre del fichero
                 String fichero = new String();
                 do{
                     ch[0] = in.readByte();
@@ -73,7 +74,7 @@ class TratarPeticion extends Thread{
                     InputStream inp = new FileInputStream(fichero);
                     DataInputStream inputfile = new DataInputStream(inp);
                     copy.copyFile(inputfile, out);
-                    //cierre del fichero
+                    //Cerramos el fichero
                     inputfile.close();
                 } else{
                     out.writeBytes("1");
@@ -82,6 +83,7 @@ class TratarPeticion extends Thread{
                 
                 s_local.close();
             }
+        //Capturamos las excepciones pertinenetes
         }catch(SocketException e) {}
         catch(Exception e){
             System.err.println("exception " + e.toString());
@@ -89,7 +91,7 @@ class TratarPeticion extends Thread{
         }
     }
     
-    //Funcion para cerrar el ServerSocket
+    //Función para cerrar el ServerSocket
     public void PararSSC(){
         try{
             sc.close();
@@ -138,6 +140,7 @@ class client {
 	 */
 
 
+    //Función read, integra el proceso de lectura desde readByte() para refactorizar el código
     static String read(DataInputStream in){
         try{
             byte[] ch = new byte[1];
@@ -160,6 +163,7 @@ class client {
 	static int register(String user) 
 	{
 
+        //Variable para el control de errores
         int res = 2;
 
         try
@@ -222,6 +226,7 @@ class client {
             DataOutputStream out = new DataOutputStream(sc.getOutputStream());
             DataInputStream in = new DataInputStream(sc.getInputStream());
         
+            //Se envía la cadena UNREGISTER
             out.writeBytes(mensaje);
             out.write('\0'); // inserta el código ASCII 0 al final
             
@@ -281,6 +286,7 @@ class client {
 		    DataOutputStream out = new DataOutputStream(sc.getOutputStream());
 		    DataInputStream in = new DataInputStream(sc.getInputStream());
 		
+            //Se envía la cadena CONNECT
 		    out.writeBytes(mensaje);
 		    out.write('\0'); // inserta el código ASCII 0 al final
 		    
@@ -343,7 +349,8 @@ class client {
             String mensaje = "DISCONNECT";
             DataOutputStream out = new DataOutputStream(sc.getOutputStream());
             DataInputStream in = new DataInputStream(sc.getInputStream());
-        
+            
+            //Se envía la cadena DISCONNECT
             out.writeBytes(mensaje);
             out.write('\0'); // inserta el código ASCII 0 al final
             
@@ -371,13 +378,14 @@ class client {
             e.printStackTrace();
             usuariosConectados = new ArrayList<DUsuario>();
             res = 3;
+            //Debemos parar el server socket ante un error desconocido por precaución
             if(sthread != null){
                 sthread.PararSSC();
                 sthread = null;
                 usuario = null;
             }
         }
-        System.out.println(res);
+        //Si nos desconectamos correctamente debemos parar el server socket
         if(res == 0){
             sthread.PararSSC();
             sthread = null;
@@ -546,39 +554,41 @@ class client {
                 //Se pasa a int
                 int conectados = Integer.parseInt(mensajeR);
                 
+                //La variable conectados sirve para el primer control de errores
                 if(conectados == 0) {
                     //Leemos la respuesta del servidor
                     mensajeR = read(in);
 
+                    //Despues, esta variable se emplea para almacenar el número de usuarios conectados que el servidor manda
                     conectados = Integer.parseInt(mensajeR);
                     if (conectados == -1){
                         res = 3;
                     } else  {
-			System.out.println("c> LIST_USERS OK");
+                        System.out.println("c> LIST_USERS OK");
                         usuariosConectados = new ArrayList<DUsuario>();
-                        //int contador = conectados *3;
+                        //Por cada usuario conectado deben imprimirse sus datos
                         while(conectados > 0){
-                        mensajeR = new String();
+                            mensajeR = new String();
 
-                        //Leemos usuario del server
-                        mensajeR = read(in);
-                        String user = mensajeR;
-                        
-                        mensajeR = new String();
-                        
-                        //Leemos ip 
-                        mensajeR = read(in);
-                        String ip = mensajeR;
-                        
-                        mensajeR = new String();
-                        
-                        //Leemos puerto 
-                        mensajeR = read(in);
-                        String puerto = mensajeR;
-                        
-                        System.out.printf("%10s%10s%10s\n", user, ip, puerto);
-                        usuariosConectados.add(new DUsuario(user, ip, Integer.parseInt(puerto)));
-                        conectados--;
+                            //Leemos usuario del server
+                            mensajeR = read(in);
+                            String user = mensajeR;
+                            
+                            mensajeR = new String();
+                            
+                            //Leemos ip 
+                            mensajeR = read(in);
+                            String ip = mensajeR;
+                            
+                            mensajeR = new String();
+                            
+                            //Leemos puerto 
+                            mensajeR = read(in);
+                            String puerto = mensajeR;
+                            
+                            System.out.printf("%10s%10s%10s\n", user, ip, puerto);
+                            usuariosConectados.add(new DUsuario(user, ip, Integer.parseInt(puerto)));
+                            conectados--;
                         }
                     }
                 }
@@ -643,6 +653,7 @@ class client {
                 //Se pasa a int el byte de respuesta
                 int conectados = Integer.parseInt(mensajeR);
                 
+                //Se sigue el mismo procedimiento que con list_users
                 if(conectados == 0) {
                     mensajeR = new String();
                     //Leemos la respuesta del servidor
@@ -681,7 +692,7 @@ class client {
         } else if(res == 2){
             System.out.println("c> LIST_CONTENT FAIL, USER NOT CONNECTED");
         } else if(res == 3){
-            System.out.println("c> LIST_CONTETN FAIL, REMOTE USER DOES NOT EXIST");
+            System.out.println("c> LIST_CONTENT FAIL, REMOTE USER DOES NOT EXIST");
         }else{
             System.out.println("c> LIST_USERS FAIL");
         }
@@ -703,6 +714,7 @@ class client {
 		    usuario = "#";
 	    }
             try{
+                //Debemos buscar al usuario en nuestra lista
                 int contador = 0;
                 while(contador < usuariosConectados.size()){
                     if(usuariosConectados.get(contador).name.equals(user_name)) {
@@ -762,7 +774,7 @@ class client {
         if(res == 0){
             System.out.println("c> GET_FILE OK");
         } else if(res == 1){
-            System.out.println("c> GET_FILE FAIL, FILE DOES NOT EXIST");
+            System.out.println("c> GET_FILE FAIL / FILE DOES NOT EXIST");
         } else {
             System.out.println("c> GET_FILE FAIL");
         }

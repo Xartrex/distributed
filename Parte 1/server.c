@@ -27,7 +27,7 @@ void print_usage() {
 	    printf("Usage: server -p puerto \n");
 }
 
-/* Signal Handler for SIGINT */
+//Manejador de señal para CTRL+C
 void sigintHandler(int sig_num) 
 { 
     printf("s> SIG HANDLER, CLOSING SERVER");
@@ -81,6 +81,7 @@ void tratar_peticion (int *s) {
         strcpy(user, inputBuff);
         printf("s> OPERATION FROM %s\n", user);
 
+        //Se ejecuta la funcón correspondiente
 		int conclusion = registro(inputBuff);
 		//ponemos en el char de enviar, registrado, para feedback de cliente
         
@@ -105,13 +106,14 @@ void tratar_peticion (int *s) {
 		 strcpy(user, inputBuff);
         printf("s> OPERATION FROM %s\n", user);
 		
-		//aqui pilla el puerto
+		//aqui recibe el puerto
 		lline = readLine(s_local, inputBuff, 256);
 	    if(lline == -1){
             //printf("Error en el readLine\n");
 		    break;
 		}
 		
+		//Se ejecuta la función correspondiente y se envía el coódigo de error
         int conclusion = conectar(user, s_local, inputBuff);
         //printf("res = %d\n",conclusion);
         char resultado[2];
@@ -133,6 +135,7 @@ void tratar_peticion (int *s) {
 		strcpy(user, inputBuff);
         printf("s> OPERATION FROM %s\n", user);
 
+        //Se ejecuta la función correspondiente y se envía el coódigo de error
 		int conclusion = baja(inputBuff);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
@@ -151,6 +154,7 @@ void tratar_peticion (int *s) {
         strcpy(user, inputBuff);
         printf("s> OPERATION FROM %s\n", user);
         
+        //Se ejecuta la función correspondiente y se envía el coódigo de error
         int conclusion = desconectar(inputBuff);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
@@ -191,6 +195,7 @@ void tratar_peticion (int *s) {
         // printf("publicar contenido del usuario\n");
         //printf("%s\n", user);
 
+        //Se ejecuta la función correspondiente y se envía el coódigo de error
         int conclusion = publicar(inputBuff, name, usery);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
@@ -220,6 +225,7 @@ void tratar_peticion (int *s) {
         char name[256];
         strcpy(name, inputBuff);
 
+        //Se ejecuta la función correspondiente y se envía el coódigo de error
         int conclusion = borrar(name, usery);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
@@ -240,6 +246,7 @@ void tratar_peticion (int *s) {
         strcpy(usery, inputBuff);
         printf("s> OPERATION FROM %s\n", user);
         
+        //Se ejecuta la función correspondiente para obtener si el usuario está conectado
         int conectados = list_users_connected(usery);
         char resultado[2];
         sprintf(resultado, "%d", conectados);
@@ -248,7 +255,9 @@ void tratar_peticion (int *s) {
             exit(0);
         }
         
+        //Primer control de errores
         if(conectados == 0) {
+            //Se enumeran los usuarios conectados
             conectados = list_users_contador();
             //printf("Usuarios conectados : %d\n", conectados);
             sprintf(resultado, "%d", conectados);
@@ -258,6 +267,7 @@ void tratar_peticion (int *s) {
             }
             
             if (conectados > 0) {
+                //Si hay usuarios conectados se envían sus datos con la función correspondiente
                 list_users(s_local);
             }
         }
@@ -278,6 +288,7 @@ void tratar_peticion (int *s) {
             break;
         }
         
+        //Se comprueba si el usuario está conectado
         int conclusion = list_contenido_connected(usery,inputBuff);
 
         char resultado[2];
@@ -287,7 +298,9 @@ void tratar_peticion (int *s) {
             exit(0);
         }
 
+        //Primer control de errores
         if(conclusion==0){
+            //Mismo proceso que para list_users
             conclusion = list_contenido_contador(inputBuff);
             sprintf(resultado, "%d", conclusion);
             if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
@@ -337,7 +350,6 @@ int main(int argc, char *argv[]) {
 
 	int puerto = atoi(port);
 
-	//  Empieza lo bueno de prueba
 	int newsd;
     int val;
     int err;

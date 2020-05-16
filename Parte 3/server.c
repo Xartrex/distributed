@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include "Gficheros.c"
 #include "lines.h"
+#include <signal.h>
 
 #define MAX_THREADS 8
 pthread_attr_t attr;
@@ -20,8 +21,20 @@ pthread_cond_t c;
 int condicio = 0;
 int contadorT = 0;
 
+int sd;
+
 void print_usage() {
 	    printf("Usage: server -p puerto \n");
+}
+
+//Manejador de señal para CTRL+C
+void sigintHandler(int sig_num) 
+{ 
+    printf("s> SIG HANDLER, CLOSING SERVER");
+    signal(SIGINT, sigintHandler); 
+    close(sd);
+    pthread_mutex_destroy(&m);
+    pthread_cond_destroy(&c);
 }
 
 
@@ -42,114 +55,111 @@ void tratar_peticion (int *s) {
     sprintf(oka, "nada");
 
     /* transferir datos sobre newsd*/
+
     for(;;) {
         char inputBuff[256];
         int lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("Error readLine tratar petición\n");
+            //printf("Error readLine tratar petición\n");
 	    break;
             
         }
 	//de la forma planteada, los errores deben mostrarlos 
 	//las funciones llamadas dentro de los IFs
-	printf("%s\n", inputBuff);
+	////printf("%s\n", inputBuff);
 
 	if(0 == strcmp(inputBuff,"REGISTER")){
 		//Si el comando es register, cogemos el parámetro
         lline = readLine(s_local, inputBuff, 256);
         if(lline <= 0){
-            printf("Error en readLine\n");
+            //printf("Error en readLine\n");
             break;
 		}
 		
 		//pequeño printf de control		
-		printf("Registro de usuario solicitado");
-        
+		//printf("Registro de usuario solicitado");
+        strcpy(user, inputBuff);
+        printf("s> OPERATION FROM %s\n", user);
+
+        //Se ejecuta la funcón correspondiente
 		int conclusion = registro(inputBuff);
 		//ponemos en el char de enviar, registrado, para feedback de cliente
         
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
-            printf("Error al enviar\n");
+            //printf("Error al enviar\n");
             exit(0);
         }
-        /*
-		if(conclusion == 0){sprintf(oka, "registrado");}
-		*/
     }
 	else if(0 == strcmp(inputBuff,"CONNECT")){
 	
         lline = readLine(s_local, inputBuff, 256);
 	    if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
 		    break;
 		}
 		//pequeño printf de control		
-		printf("conexion de usuario solicitado");
+		//printf("conexion de usuario solicitado");
 
 		//copiar el nombre del usuario al hacer connect para tenerlo a la hora de publicar y borrar contenidos
-		strcpy(user, inputBuff);
-        printf("%s", user);
+		 strcpy(user, inputBuff);
+        printf("s> OPERATION FROM %s\n", user);
 		
-		//aqui pilla el puerto
+		//aqui recibe el puerto
 		lline = readLine(s_local, inputBuff, 256);
 	    if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
 		    break;
 		}
 		
-		int conclusion = conectar(user, s_local, inputBuff);
+		//Se ejecuta la función correspondiente y se envía el coódigo de error
+        int conclusion = conectar(user, s_local, inputBuff);
+        //printf("res = %d\n",conclusion);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
-            printf("Error al enviar\n");
+            //printf("Error al enviar\n");
             exit(0);
         }
-		//ponemos en el char de enviar, registrado, para feedback de cliente
-		//if(conclusion == 0){sprintf(oka, "conectado");}
     }
 	else if(0 == strcmp(inputBuff, "UNREGISTER")){
 
         //si el comando es unregister, cogemos el parámetro
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
             break;
 		}
 		//pequeño printf de control		
-		printf("darse de baja de usuario solicitado");
+		strcpy(user, inputBuff);
+        printf("s> OPERATION FROM %s\n", user);
 
+        //Se ejecuta la función correspondiente y se envía el coódigo de error
 		int conclusion = baja(inputBuff);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
-            printf("Error al enviar\n");
+            //printf("Error al enviar\n");
             exit(0);
         }
-		//ponemos en el char de enviar, registrado, para feedback de cliente
-		//if(conclusion == 0){sprintf(oka, "registro eliminado");}
-    	
 	}
 	else if(0 == strcmp(inputBuff, "DISCONNECT")){
         
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
             break;
         }
-        //pequeño printf de control		
-        printf("desconexion de usuario solicitado");
-
-        //copiar el nombre del usuario al hacer disconnect para tenerlo a la hora de publicar y borrar contenidos
-        //strcpy(user, inputBuff);
-        //printf("%s", user);
+        strcpy(user, inputBuff);
+        printf("s> OPERATION FROM %s\n", user);
         
+        //Se ejecuta la función correspondiente y se envía el coódigo de error
         int conclusion = desconectar(inputBuff);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
-            printf("Error al enviar\n");
+            //printf("Error al enviar\n");
             exit(0);
         }
 	}
@@ -157,16 +167,17 @@ void tratar_peticion (int *s) {
 
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
             break;
         }
         //coger el nombre de usuario
         char usery[256];
         strcpy(usery, inputBuff);
+        printf("s> OPERATION FROM %s\n", user);
         
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
             break;
         }
         //coger nombre del archivo
@@ -176,19 +187,20 @@ void tratar_peticion (int *s) {
         //coger la descripcion
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
             break;
         }
 
         //pequeño printf de control
-        printf("publicar contenido del usuario\n");
-        printf("%s\n", user);
+        // printf("publicar contenido del usuario\n");
+        //printf("%s\n", user);
 
+        //Se ejecuta la función correspondiente y se envía el coódigo de error
         int conclusion = publicar(inputBuff, name, usery);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
-            printf("Error al enviar\n");
+            //printf("Error al enviar\n");
             exit(0);
         }            
 	}
@@ -196,65 +208,66 @@ void tratar_peticion (int *s) {
 
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
             break;
         }
         //coger el nombre de usuario
         char usery[256];
         strcpy(usery, inputBuff);
+        printf("s> OPERATION FROM %s\n", user);
         
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
             break;
         }
         //coger nombre del archivo
         char name[256];
         strcpy(name, inputBuff);
 
-        //pequeño printf de control		
-        printf("eliminar contenido del usuario");
-
+        //Se ejecuta la función correspondiente y se envía el coódigo de error
         int conclusion = borrar(name, usery);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
-            printf("Error al enviar\n");
+            //printf("Error al enviar\n");
             exit(0);
         }
 	}
 	else if (0 == strcmp(inputBuff, "LIST_USERS")){
-        //pequeño printf de control		
-        printf("lista de usuarios conectados\n");
 
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
             break;
         }
         //coger el nombre de usuario
         char usery[256];
         strcpy(usery, inputBuff);
+        printf("s> OPERATION FROM %s\n", user);
         
+        //Se ejecuta la función correspondiente para obtener si el usuario está conectado
         int conectados = list_users_connected(usery);
         char resultado[2];
-        printf("Comprobacion inicial : %d\n", conectados);
         sprintf(resultado, "%d", conectados);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
-            printf("Error al enviar\n");
+            //printf("Error al enviar\n");
             exit(0);
         }
         
+        //Primer control de errores
         if(conectados == 0) {
+            //Se enumeran los usuarios conectados
             conectados = list_users_contador();
-            printf("Usuarios conectados : %d\n", conectados);
+            //printf("Usuarios conectados : %d\n", conectados);
             sprintf(resultado, "%d", conectados);
             if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
-                printf("Error al enviar\n");
+                //printf("Error al enviar\n");
                 exit(0);
             }
             
             if (conectados > 0) {
+                //Si hay usuarios conectados se envían sus datos con la función correspondiente
                 list_users(s_local);
             }
         }
@@ -262,36 +275,36 @@ void tratar_peticion (int *s) {
 	else if(0 == strcmp(inputBuff, "LIST_CONTENT")){
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("error2\n");
+            //printf("Error2\n");
             break;
         }
         char usery[256];
         strcpy(usery, inputBuff);
-        //pequeño printf de control		
-        printf("lista del contenido del usuario\n");
+        printf("s> OPERATION FROM %s\n", user);
 
         lline = readLine(s_local, inputBuff, 256);
         if(lline == -1){
-            printf("Error en el readLine\n");
+            //printf("Error en el readLine\n");
             break;
         }
         
+        //Se comprueba si el usuario está conectado
         int conclusion = list_contenido_connected(usery,inputBuff);
 
         char resultado[2];
-        printf("Comprobacion inicial : %d\n", conclusion);
         sprintf(resultado, "%d", conclusion);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
-            printf("Error al enviar\n");
+            //printf("Error al enviar\n");
             exit(0);
         }
 
+        //Primer control de errores
         if(conclusion==0){
+            //Mismo proceso que para list_users
             conclusion = list_contenido_contador(inputBuff);
-            printf("Usuarios conectados : %d\n", conclusion);
             sprintf(resultado, "%d", conclusion);
             if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
-                printf("Error al enviar\n");
+                //printf("Error al enviar\n");
                 exit(0);
             }
 
@@ -302,12 +315,12 @@ void tratar_peticion (int *s) {
 	}
     int mesg2 = enviar(s_local, oka, strlen(oka)+1);
         if(mesg2 == -1){
-            printf("error enviar2\n");
+            //printf("Error enviar2\n");
             break;
-        }        
+        }    
+    printf("s>\n");
     }//fin del for infinito, fin de conexion
-
-    printf("Cerrando la conexion\n");
+    
     close(s_local);
     pthread_exit(NULL);
 
@@ -334,11 +347,10 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	printf("Port: %s\n", port);
+
 	int puerto = atoi(port);
 
-	//  Empieza lo bueno de prueba
-	int sd, newsd;
+	int newsd;
     int val;
     int err;
     socklen_t size;
@@ -365,21 +377,26 @@ int main(int argc, char *argv[]) {
 
     /* bind */
     if(bind(sd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        printf("Erroren el bind\n");
+        //printf("Erroren el bind\n");
         return(-1);
     }
-    
+    char clientip[20];
+    strcpy(clientip, inet_ntoa(server_addr.sin_addr));
+
+    printf("Init server %s:%d\n", clientip, puerto);
     listen(sd, SOMAXCONN);
     
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     
+    signal(SIGINT, sigintHandler);
     for (;;) {
-	printf("Esperando conexión\n");
+	//printf("Esperando conexión\n");
+   
 
         newsd = accept(sd, (struct sockaddr*) &client_addr, &size);
         if (newsd < 0) {
-            printf("Error en el accept");
+            //printf("Error en el accept");
             return(-1);
         }
         pthread_create(&thid[contadorT], &attr, (void*)tratar_peticion, &newsd);
