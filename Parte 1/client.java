@@ -122,7 +122,7 @@ class client {
 	
 	private static String _server   = null;
 	private static int _port = -1;
-	private static String usuario; //Variable global para almacenar el uusario actualmente conectado
+	private static String usuario; //Variable global para almacenar el uusuario actualmente conectado
 	private static boolean registrado;
 	private static TratarPeticion sthread = null;
 	
@@ -244,7 +244,7 @@ class client {
         }
         
         if(res == 0){
-            System.out.println("c> UNREGISTER " + user);
+            System.out.println("c> UNREGISTER OK");
         } else if(res == 1){
             System.out.println("c> USER DOES NOT EXIST");
         } else {
@@ -272,58 +272,55 @@ class client {
         String port = Integer.toString(puerto);
         
         int res = 3;
+	if(usuario == null || usuario == "#"){
+		try
+		{
+		    // se crea el socket del cliente
+		    Socket sc = new Socket(_server, _port);
+		    String mensaje = "CONNECT";
+		    DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+		    DataInputStream in = new DataInputStream(sc.getInputStream());
+		
+		    out.writeBytes(mensaje);
+		    out.write('\0'); // inserta el código ASCII 0 al final
+		    
+		    if(mensaje.equals("CONNECT")==true){
 
-        try
-        {
-            // se crea el socket del cliente
-            Socket sc = new Socket(_server, _port);
-            String mensaje = "CONNECT";
-            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
-            DataInputStream in = new DataInputStream(sc.getInputStream());
-        
-            out.writeBytes(mensaje);
-            out.write('\0'); // inserta el código ASCII 0 al final
-            
-            if(mensaje.equals("CONNECT")==true){
+			out.writeBytes(user);
+			out.write('\0'); // inserta el código ASCII 0 al final
+			out.writeBytes(port);
+			out.write('\0');
+		    }
 
-                out.writeBytes(user);
-                out.write('\0'); // inserta el código ASCII 0 al final
-                out.writeBytes(port);
-                out.write('\0');
-            }
+		    //Leemos la respuesta del servidor
+		    String mensajeR = read(in);
 
-        if(usuario != null){
-            res = 2;
-            //ya está conectado un usuario desde esa terminal
-        }
-        else{
-            //mete en la variable global el usuario conectado, uno por terminal a la vez
-            usuario = user;
+		    //Se pasa a int
+		    res = Integer.parseInt(mensajeR);
+		    
+		    if (res == 0){
+		    //mete en la variable global el usuario conectado, uno por terminal a la vez
+		    usuario = user;
 
-            //Leemos la respuesta del servidor
-            String mensajeR = read(in);
+		    sthread = new TratarPeticion(ssc);
+		    sthread.start();
+		    }
+		
+		}//fin del try
 
-            //Se pasa a int
-            res = Integer.parseInt(mensajeR);
-            
-            if (res == 0){
-            sthread = new TratarPeticion(ssc);
-            sthread.start();
-            }
-        }
-        }//fin del try
-
-        catch (Exception e)
-        {
-            System.err.println("excepcion " + e.toString() );
-            e.printStackTrace();
-        }
+		catch (Exception e)
+		{
+		    System.err.println("excepcion " + e.toString() );
+		    e.printStackTrace();
+		}
+	}else{ res = 2;}
+	
         if(res == 0){
             System.out.println("c> CONNECT OK");
         } else if(res == 1){
             System.out.println("c> CONNECT FAIL, USER DOES NOT EXIST");
         } else if(res == 2){
-            System.out.println("c> USER ALREADY CONNECTED");
+            System.out.println("c> CONNECT FAIL, USER ALREADY CONNECTED");
         } else {
             System.out.println("c> CONNECT FAIL");
         }
@@ -354,20 +351,17 @@ class client {
                 out.writeBytes(user);
                 out.write('\0'); // inserta el código ASCII 0 al final
             }
-            
+           /* 
             if (false == user.equals(usuario)){
                 res = 3;
-            }
-        
-            else{
-                //Leemos la respuesta del servidor
+            }*/
                 String mensajeR = read(in);
 
                 //Se pasa a int
                 res = Integer.parseInt(mensajeR);
             
                 usuariosConectados = new ArrayList<DUsuario>(); //Esta lista ya no nos sirve pues está desactualizada
-            }
+            
         }//fin del try
 
         catch (Exception e)
@@ -383,7 +377,7 @@ class client {
                 usuario = null;
             }
         }
-        
+        System.out.println(res);
         if(res == 0){
             sthread.PararSSC();
             sthread = null;
@@ -408,13 +402,11 @@ class client {
 	static int publish(String file_name, String description) 
 	{
         
-        int res = 4;
+            int res = 4;
         
-        if(usuario == null){    //usuario no conectado
-            res = 2;
-        }
-
-        else{
+    	    if(usuario == null){
+	    	usuario = "#";
+    	    }	
             try
             {
                 //Se crea el socket del cliente
@@ -448,7 +440,7 @@ class client {
                 System.err.println("excepcion " + e.toString() );
                 e.printStackTrace();
             }
-        }
+        
                 
         if(res == 0){
             System.out.println("c> PUBLISH OK");
@@ -471,12 +463,11 @@ class client {
 	 */
 	static int delete(String file_name)
 	{
-        int res = 4;
+            int res = 4;
 
-        if(usuario == null){    //usuario no conectado
-            res = 2;
-        }
-        else{
+    	    if(usuario == null){
+	    	usuario = "#";
+    	    }	
             try
             {
                 //Se crea el socket del cliente
@@ -508,7 +499,7 @@ class client {
                 System.err.println("excepcion " + e.toString() );
                 e.printStackTrace();
             }
-        }
+        
         
         if(res == 0){
             System.out.println("c> DELETE OK");
@@ -529,11 +520,10 @@ class client {
 	 */
 	static int list_users()
 	{
-        int res = 0;
-
-        if(usuario == null){//usuario no conectado
-            res = 2;
-        } else {
+	    int res = 0;
+    	    if(usuario == null){
+	    	usuario = "#";
+    	    }	
             try
             {
                 // se crea el socket del cliente
@@ -564,6 +554,7 @@ class client {
                     if (conectados == -1){
                         res = 3;
                     } else  {
+			System.out.println("c> LIST_USERS OK");
                         usuariosConectados = new ArrayList<DUsuario>();
                         //int contador = conectados *3;
                         while(conectados > 0){
@@ -592,6 +583,7 @@ class client {
                     }
                 }
 
+	    else{ res = conectados;}
             }//fin del try
 
             catch (Exception e)
@@ -599,9 +591,9 @@ class client {
                 System.err.println("excepcion " + e.toString() );
                 e.printStackTrace();
             }
-        }
+        
         if(res == 0){
-            System.out.println("c> LIST_USERS OK");
+
         } else if(res == 1){
             System.out.println("c> LIST_USERS FAIL, USER DOES NOT EXIST");
         } else if(res == 2){
@@ -621,12 +613,10 @@ class client {
 	 */
 	static int list_content(String user_name)
 	{
-        int res = 0;
-
-        if(usuario == null){    //usuario no conectado
-            res = 2;
-        }
-        else{
+       	    int res = 0;
+    	    if(usuario == null){
+	    	usuario = "#";
+    	    }	
             try
             {
 
@@ -675,6 +665,7 @@ class client {
                     }
                 }
 
+	    else{ res = conectados;}
             }//fin del try
 
             catch (Exception e)
@@ -682,7 +673,7 @@ class client {
                 System.err.println("excepcion " + e.toString() );
                 e.printStackTrace();
             }
-        }
+        
         if(res == 0){
             System.out.println("c> LIST_CONTENT OK");
         } else if(res == 1){
@@ -706,12 +697,11 @@ class client {
 	 */
 	static int get_file(String user_name, String remote_file_name, String local_file_name)
 	{
-        int res = 3;
-	
-        if(usuario == null){//usuario no conectado
-            res = 2;
-        }
-        else{
+	    int res = 3;
+		
+	    if(usuario == null){
+		    usuario = "#";
+	    }
             try{
                 int contador = 0;
                 while(contador < usuariosConectados.size()){
@@ -768,7 +758,6 @@ class client {
                 System.err.println("excepcion " + e.toString());
                 res = 2;
             }
-        }
 
         if(res == 0){
             System.out.println("c> GET_FILE OK");
