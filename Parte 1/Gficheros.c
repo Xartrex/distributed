@@ -78,12 +78,8 @@ int conectar(char *usuario, int s_local, char *puerto) {
         mkdir("./ficheros/usuarios conectados", 0777);
     }
 
-
     char patata[256];
     sprintf(patata,"./ficheros/usuarios/%s", usuario);
-
-
-
 
     // ./ficheros/Usuaro1 si no existe es que no esta registrado
     if (stat(patata, &st) == -1) { //poner comprobacion de si ya esta registrado con == 0
@@ -111,7 +107,7 @@ int conectar(char *usuario, int s_local, char *puerto) {
         }
 
         //escribe el puerto en el fichero
-        fprintf(fd, "%s,%s", puerto,clientip);
+        fprintf(fd, "%s,%s", puerto, clientip);
 
         fclose(fd);
     }
