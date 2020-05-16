@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include "Gficheros.c"
 #include "lines.h"
+#include <signal.h>
 
 #define MAX_THREADS 8
 pthread_attr_t attr;
@@ -20,8 +21,20 @@ pthread_cond_t c;
 int condicio = 0;
 int contadorT = 0;
 
+int sd;
+
 void print_usage() {
 	    printf("Usage: server -p puerto \n");
+}
+
+/* Signal Handler for SIGINT */
+void sigintHandler(int sig_num) 
+{ 
+    printf("s> SIG HANDLER, CLOSING SERVER");
+    signal(SIGINT, sigintHandler); 
+    close(sd);
+    pthread_mutex_destroy(&m);
+    pthread_cond_destroy(&c);
 }
 
 
@@ -99,8 +112,8 @@ void tratar_peticion (int *s) {
 		    break;
 		}
 		
-	int conclusion = conectar(user, s_local, inputBuff);
-	//printf("res = %d\n",conclusion);
+        int conclusion = conectar(user, s_local, inputBuff);
+        //printf("res = %d\n",conclusion);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){
@@ -175,7 +188,7 @@ void tratar_peticion (int *s) {
         }
 
         //pequeño printf de control
-       // printf("publicar contenido del usuario\n");
+        // printf("publicar contenido del usuario\n");
         //printf("%s\n", user);
 
         int conclusion = publicar(inputBuff, name, usery);
@@ -325,7 +338,7 @@ int main(int argc, char *argv[]) {
 	int puerto = atoi(port);
 
 	//  Empieza lo bueno de prueba
-	int sd, newsd;
+	int newsd;
     int val;
     int err;
     socklen_t size;
@@ -364,6 +377,7 @@ int main(int argc, char *argv[]) {
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     
+    signal(SIGINT, sigintHandler);
     for (;;) {
 	//printf("Esperando conexión\n");
    
