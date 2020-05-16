@@ -5,8 +5,6 @@ import java.lang.* ;
 import java.io.* ;
 import java.net.* ;
 import java.util.* ;
-
-import java.net.URL;
 import client.Mayus.MayusServiceService;
 import client.Mayus.MayusService;
 import java.util.List;
@@ -14,6 +12,7 @@ import java.util.List;
 class copy {
     static void copyFile(DataInputStream inputStream, DataOutputStream outputStream) throws IOException {
         try {
+	System.out.println("Hey class copy");
             byte[] buffer = new byte[1024];
             int length = 0;
             while ((length = inputStream.read(buffer)) > 0) {
@@ -43,16 +42,16 @@ class TratarPeticion extends Thread{
                 
                 //Lee del socket
                 System.out.println("Leemos el GET_FILE");
-                byte[] ch = new byte[1];
-                String mensajeR = new String();
-                do{
-                    ch[0] = in.readByte();
-                    if (ch[0] != '\0'){
-                        String d = new String(ch);
-                        mensajeR = mensajeR + d;
-                    }
-                } while(ch[0] != '\0');
-
+		
+		byte[] ch = new byte[1];
+		String mensajeR = new String();
+		do{
+			ch[0] = in.readByte();
+			if (ch[0] != '\0'){
+				String d = new String(ch);
+				mensajeR = mensajeR + d;
+			}
+		} while(ch[0] != '\0');
                 //si la cadena recibida no es GET_FILE error
                 if(!mensajeR.equals("GET_FILE")){
                     System.out.println("Error");
@@ -71,7 +70,7 @@ class TratarPeticion extends Thread{
                     }
                 } while(ch[0] != '\0');
                 System.out.println("Nombre recibido: " + fichero);
-                
+                fichero = "/ficheros/usuarios/" + fichero;
                 File fd = new File(fichero);
 
                 //Si existe el fichero lo copia al socket y envia codigo 0
@@ -145,6 +144,27 @@ class client {
 	 * 
 	 * @return ERROR CODE
 	 */
+
+
+    	static String read(DataInputStream in){
+	try{
+		byte[] ch = new byte[1];
+		String mensajeR = new String();
+		do{
+			ch[0] = in.readByte();
+			if (ch[0] != '\0'){
+				String d = new String(ch);
+				mensajeR = mensajeR + d;
+			}
+		} while(ch[0] != '\0');
+		return mensajeR;
+	}catch(Exception e){
+		System.err.println("excepcion " + e.toString() );
+		e.printStackTrace();
+		return "";
+	}
+	}
+
 	static int register(String user) 
 	{
 
@@ -167,17 +187,9 @@ class client {
             }
 
             //Leemos la respuesta del servidor
-			byte[] ch = new byte[1];
-			String mensajeR = new String();
-			do{
-				ch[0] = in.readByte();
-				if (ch[0] != '\0'){
-					String d = new String(ch);
-					mensajeR = mensajeR + d;
-				}
-			} while(ch[0] != '\0');
+	    String mensajeR = read(in);
 
-			//Se pasa a int
+	    //Se pasa a int
             res = Integer.parseInt(mensajeR);
             
             //Se cierra la conexión
@@ -230,16 +242,9 @@ class client {
                 out.write('\0'); // inserta el código ASCII 0 al final
             }
 
-            byte[] ch = new byte[1];
-            String mensajeR = new String();
-            do{
-                ch[0] = in.readByte();
-                if (ch[0] != '\0'){
-                    String d = new String(ch);
-                    mensajeR = mensajeR + d;
-                }
-            } while(ch[0] != '\0');
-            
+            //Leemos la respuesta del servidor
+	    String mensajeR = read(in);
+
             //Se pasa a int
             res = Integer.parseInt(mensajeR);
             
@@ -272,7 +277,7 @@ class client {
 	static int connect(String user) 
 	{
         // Write your code here
-        System.out.println("CONNECT " + user);
+        //System.out.println("CONNECT " + user);
 
         ServerSocket ssc = null;
         try{
@@ -298,32 +303,34 @@ class client {
             out.write('\0'); // inserta el código ASCII 0 al final
             
             if(mensaje.equals("CONNECT")==true){
+
                 out.writeBytes(user);
                 out.write('\0'); // inserta el código ASCII 0 al final
                 out.writeBytes(port);
                 out.write('\0');
             }
 
-            //mete en la variable global el usuario conectado, uno por terminal a la vez
-            usuario = user;
+	    if(usuario != null){
+		    System.out.println(usuario +" esta conectado ya");
+		    res = 2;
+		    //ya está conectado un usuario desde esa terminal
+	    }
+	    else{
+		    //System.out.println("No habia conexion previa");
+		    //mete en la variable global el usuario conectado, uno por terminal a la vez
+		    usuario = user;
 
-            byte[] ch = new byte[1];
-            String mensajeR = new String();
-            do{
-                ch[0] = in.readByte();
-                if (ch[0] != '\0'){
-                    String d = new String(ch);
-                    mensajeR = mensajeR + d;
-                }
-            } while(ch[0] != '\0');
+		    //Leemos la respuesta del servidor
+		    String mensajeR = read(in);
 
-            //Se pasa a int
-            res = Integer.parseInt(mensajeR);
-            
-            if (res == 0){
-                sthread = new TratarPeticion(ssc);
-                sthread.start();
-            }
+		    //Se pasa a int
+		    res = Integer.parseInt(mensajeR);
+		    
+		    if (res == 0){
+			sthread = new TratarPeticion(ssc);
+			sthread.start();
+		    }
+	    }
         }//fin del try
 
         catch (Exception e)
@@ -331,7 +338,8 @@ class client {
             System.err.println("excepcion " + e.toString() );
             e.printStackTrace();
         }
-
+	
+	System.out.println("res: " + res);
         if(res == 0){
             System.out.println("c> CONNECT OK");
         } else if(res == 1){
@@ -368,25 +376,24 @@ class client {
                 out.writeBytes(user);
                 out.write('\0'); // inserta el código ASCII 0 al final
             }
+		
+	    if (false == user.equals(usuario)){
+		    System.out.println("No puedes desconectar a otros usuarios");
+		    res = 3;
+	    }
+	
+	    else{
+		    //Leemos la respuesta del servidor
+		    String mensajeR = read(in);
 
-            byte[] ch = new byte[1];
-            String mensajeR = new String();
-            do{
-                ch[0] = in.readByte();
-                if (ch[0] != '\0'){
-                    String d = new String(ch);
-                    mensajeR = mensajeR + d;
-                }
-            } while(ch[0] != '\0');
-            
-            //Se pasa a int
-            res = Integer.parseInt(mensajeR);
-            
-            usuariosConectados = new ArrayList<DUsuario>(); //Esta lista ya no nos sirve pues está desactualizada
-            
-            //Se cierra la conexión
-            //sc.close();
-
+		    //Se pasa a int
+		    res = Integer.parseInt(mensajeR);
+	    
+		    usuariosConectados = new ArrayList<DUsuario>(); //Esta lista ya no nos sirve pues está desactualizada
+		    
+		    //Se cierra la conexión
+		    //sc.close();
+	    }
         }//fin del try
 
         catch (Exception e)
@@ -427,75 +434,68 @@ class client {
 	 */
 	static int publish(String file_name, String description) 
 	{
-        
-        int res = 4;
 
-        try
-        {
-            //Se crea el socket del cliente
-            Socket sc = new Socket(_server, _port);
-            String mensaje = "PUBLISH";
-            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
-            DataInputStream in = new DataInputStream(sc.getInputStream());
-        
-            out.writeBytes(mensaje);
-            out.write('\0'); // inserta el código ASCII 0 al final
-            
-            if(mensaje.equals("PUBLISH")==true){
-                out.writeBytes(usuario);
-                out.write('\0');
-                out.writeBytes(file_name);
-                out.write('\0'); // inserta el código ASCII 0 al final
-                
-                //Se llama al servicio web para pasar la cadena descripción a mayúsculas
-                URL url = new URL("http://localhost:8888/Mayus");
-                MayusServiceServiceservice = new MayusServiceService(url);
-                MayusServiceport = service.getMayusServicePort();
-                
-                String descripcionMAYUS = port.toUpper(description);
-                
-                out.writeBytes(descriptionMAYUS);
-                out.write('\0');
-            }
-            
-            byte[] ch = new byte[1];
-            String mensajeR = new String();
-            do{
-                ch[0] = in.readByte();
-                if (ch[0] != '\0'){
-                    String d = new String(ch);
-                    mensajeR = mensajeR + d;
-                }
-            } while(ch[0] != '\0');
+	int res = 4;
 
-            //Se pasa a int
-            res = Integer.parseInt(mensajeR);
-            
-            //Se cierra la conexión
-            //sc.close();
+	try
+	{
+		//Se crea el socket del cliente
+		Socket sc = new Socket(_server, _port);
+		String mensaje = "PUBLISH";
+		DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+		DataInputStream in = new DataInputStream(sc.getInputStream());
 
-        }//fin del try
+		out.writeBytes(mensaje);
+		out.write('\0'); // inserta el código ASCII 0 al final
 
-        catch (Exception e)
-        {
-            System.err.println("excepcion " + e.toString() );
-            e.printStackTrace();
-        }
-        System.out.println("PUBLISH " + file_name + " " + description);
-        
-        if(res == 0){
-            System.out.println("c> PUBLISH OK");
-        } else if(res == 1){
-            System.out.println("c> PUBLISH FAIL, USER DOES NOT EXIST");
-        } else if(res == 2){
-            System.out.println("c> PUBLISH FAIL, USER NOT CONNECTED");
-        } else if(res == 3){
-            System.out.println("c> PUBLISH FAIL, CONTENT ALREDAY PUBLISHED");
-        } else {
-            System.out.println("c> PUBLISH FAIL");
-        }
-        return res;
-    }
+		if(mensaje.equals("PUBLISH")==true){
+		out.writeBytes(usuario);
+		out.write('\0');
+		out.writeBytes(file_name);
+		out.write('\0'); // inserta el código ASCII 0 al final
+
+		//Se llama al servicio web para pasar la cadena descripción a mayúsculas
+		URL url = new URL("http://localhost:8888/Mayus");
+		MayusServiceServiceservice = new MayusServiceService(url);
+		MayusServiceport = service.getMayusServicePort();
+
+		String descripcionMAYUS = port.toUpper(description);
+
+		out.writeBytes(descriptionMAYUS);
+		out.write('\0');
+		}
+		
+		String mensajeR = read(in);
+		
+		//Se pasa a int
+		res = Integer.parseInt(mensajeR);
+
+		//Se cierra la conexión
+		//sc.close();
+		}//fin del try
+
+	catch (Exception e)
+	{
+		System.err.println("excepcion " + e.toString() );
+		e.printStackTrace();
+	}
+	System.out.println("PUBLISH " + file_name + " " + description);
+
+	if(res == 0){
+		System.out.println("c> PUBLISH OK");
+	} else if(res == 1){
+		System.out.println("c> PUBLISH FAIL, USER DOES NOT EXIST");
+	} else if(res == 2){
+		System.out.println("c> PUBLISH FAIL, USER NOT CONNECTED");
+	} else if(res == 3){
+		System.out.println("c> PUBLISH FAIL, CONTENT ALREDAY PUBLISHED");
+	} else {
+		System.out.println("c> PUBLISH FAIL");
+	}
+	return res;
+
+	}
+
 
 	 /**
 	 * @param file_name    - file name
@@ -506,47 +506,45 @@ class client {
 	{
         int res = 4;
 
-        try
-        {
-            //Se crea el socket del cliente
-            Socket sc = new Socket(_server, _port);
-            String mensaje = "DELETE";
-            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
-            DataInputStream in = new DataInputStream(sc.getInputStream());
-        
-            out.writeBytes(mensaje);
-            out.write('\0'); // inserta el código ASCII 0 al final
-            
-            if(mensaje.equals("DELETE")==true){
-                out.writeBytes(usuario);
-                out.write('\0');
-                out.writeBytes(file_name);
-                out.write('\0'); // inserta el código ASCII 0 al final
-            }
-            
-            byte[] ch = new byte[1];
-            String mensajeR = new String();
-            do{
-                ch[0] = in.readByte();
-                if (ch[0] != '\0'){
-                    String d = new String(ch);
-                    mensajeR = mensajeR + d;
-                }
-            } while(ch[0] != '\0');
+	if(usuario == null){//usuario no conectado
+		res = 2;
+	}
+	else{
+		try
+		{
+		    //Se crea el socket del cliente
+		    Socket sc = new Socket(_server, _port);
+		    String mensaje = "DELETE";
+		    DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+		    DataInputStream in = new DataInputStream(sc.getInputStream());
+		
+		    out.writeBytes(mensaje);
+		    out.write('\0'); // inserta el código ASCII 0 al final
+		    
+		    if(mensaje.equals("DELETE")==true){
+			out.writeBytes(usuario);
+			out.write('\0');
+			out.writeBytes(file_name);
+			out.write('\0'); // inserta el código ASCII 0 al final
+		    }
+		    
+		    //Leemos la respuesta del servidor
+		    String mensajeR = read(in);
 
-            //Se pasa a int
-            res = Integer.parseInt(mensajeR);
-            
-            //Se cierra la conexión
-            //sc.close();
+		    //Se pasa a int
+		    res = Integer.parseInt(mensajeR);
+		    
+		    //Se cierra la conexión
+		    //sc.close();
 
-        }//fin del try
+		}//fin del try
 
-        catch (Exception e)
-        {
-            System.err.println("excepcion " + e.toString() );
-            e.printStackTrace();
-        }
+		catch (Exception e)
+		{
+		    System.err.println("excepcion " + e.toString() );
+		    e.printStackTrace();
+		}
+	}
         System.out.println("DELETE " + file_name);
         
         if(res == 0){
@@ -570,101 +568,79 @@ class client {
 	{
         int res = 0;
 
-        try
-        {
+	if(usuario == null){//usuario no conectado
+		res = 2;
+	}
+	else{
+		try
+		{
 
-            // se crea el socket del cliente
-            Socket sc = new Socket(_server, _port);
-            String mensaje = "LIST_USERS";
-            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
-            DataInputStream in = new DataInputStream(sc.getInputStream());
-        
-            out.writeBytes(mensaje);
-            out.write('\0'); // inserta el código ASCII 0 al final
-            
-            if(mensaje.equals("LIST_USERS")==true){
-                out.writeBytes(usuario);
-                out.write('\0'); // inserta el código ASCII 0 al final
-            }
+		    // se crea el socket del cliente
+		    Socket sc = new Socket(_server, _port);
+		    String mensaje = "LIST_USERS";
+		    DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+		    DataInputStream in = new DataInputStream(sc.getInputStream());
+		
+		    out.writeBytes(mensaje);
+		    out.write('\0'); // inserta el código ASCII 0 al final
+		    
+		    if(mensaje.equals("LIST_USERS")==true){
+			out.writeBytes(usuario);
+			out.write('\0'); // inserta el código ASCII 0 al final
+		    }
 
-            byte[] ch = new byte[1];
-            String mensajeR = new String();
-            do{
-                ch[0] = in.readByte();
-                if (ch[0] != '\0'){
-                    String d = new String(ch);
-                    mensajeR = mensajeR + d;
-                }
-            } while(ch[0] != '\0');
+		    //Leemos la respuesta del servidor
+		    String mensajeR = read(in);
 
-            //Se pasa a int
-            int conectados = Integer.parseInt(mensajeR);
-            
-            if(conectados == 0) {
-                mensajeR = new String();
-                do{
-                    ch[0] = in.readByte();
-                    if (ch[0] != '\0'){
-                        String d = new String(ch);
-                        mensajeR = mensajeR + d;
-                    }
-                } while(ch[0] != '\0');
-                conectados = Integer.parseInt(mensajeR);
-                //System.out.println(conectados);
-                if (conectados == -1){
-                    res = 3;
-                } else  {
-                    usuariosConectados = new ArrayList<DUsuario>();
-                    //int contador = conectados *3;
-                    while(conectados > 0){
-                        mensajeR = new String();
-                        do{
-                            ch[0] = in.readByte();
-                            if (ch[0] != '\0'){
-                                String d = new String(ch);
-                                mensajeR = mensajeR + d;
-                                
-                            }
-                        } while(ch[0] != '\0');
-                        String user = mensajeR;
-                        
-                        mensajeR = new String();
-                        do{
-                            ch[0] = in.readByte();
-                            if (ch[0] != '\0'){
-                                String d = new String(ch);
-                                mensajeR = mensajeR + d;
-                                
-                            }
-                        } while(ch[0] != '\0');
-                        String ip = mensajeR;
-                        
-                        mensajeR = new String();
-                        do{
-                            ch[0] = in.readByte();
-                            if (ch[0] != '\0'){
-                                String d = new String(ch);
-                                mensajeR = mensajeR + d;
-                                
-                            }
-                        } while(ch[0] != '\0');
-                        String puerto = mensajeR;
-                        
-                        System.out.printf("%10s%10s%10s\n", user, ip, puerto);
-                        usuariosConectados.add(new DUsuario(user, ip, Integer.parseInt(puerto)));
-                        conectados--;
-                    }
-                }
-            }
+		    //Se pasa a int
+		    int conectados = Integer.parseInt(mensajeR);
+		    
+		    if(conectados == 0) {
+			
+			//Leemos la respuesta del servidor
+			mensajeR = read(in);
 
-        }//fin del try
+			conectados = Integer.parseInt(mensajeR);
+			//System.out.println(conectados);
+			if (conectados == -1){
+			    res = 3;
+			} else  {
+			    usuariosConectados = new ArrayList<DUsuario>();
+			    //int contador = conectados *3;
+			    while(conectados > 0){
+				mensajeR = new String();
 
-        catch (Exception e)
-        {
-            System.err.println("excepcion " + e.toString() );
-            e.printStackTrace();
-        }
-        
+				//Leemos usuario del server
+				mensajeR = read(in);
+				String user = mensajeR;
+				
+				mensajeR = new String();
+				
+				//Leemos ip 
+				mensajeR = read(in);
+				String ip = mensajeR;
+				
+				mensajeR = new String();
+				
+				//Leemos puerto 
+				mensajeR = read(in);
+				String puerto = mensajeR;
+				
+				System.out.printf("%10s%10s%10s\n", user, ip, puerto);
+				usuariosConectados.add(new DUsuario(user, ip, Integer.parseInt(puerto)));
+				conectados--;
+			    }
+			}
+		    }
+
+		}//fin del try
+
+		catch (Exception e)
+		{
+		    System.err.println("excepcion " + e.toString() );
+		    e.printStackTrace();
+		}
+	}
         if(res == 0){
             System.out.println("c> LIST_USERS OK");
         } else if(res == 1){
@@ -688,79 +664,80 @@ class client {
 	{
 		int res = 0;
 
-        try
-        {
+	if(usuario == null){//usuario no conectado
+		res = 2;
+	}
+	else{
+		try
+		{
 
-            // se crea el socket del cliente
-            Socket sc = new Socket(_server, _port);
-            String mensaje = "LIST_CONTENT";
-            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
-            DataInputStream in = new DataInputStream(sc.getInputStream());
-        
-            out.writeBytes(mensaje);
-            out.write('\0'); // inserta el código ASCII 0 al final
-            
-            if(mensaje.equals("LIST_CONTENT")==true){
-                out.writeBytes(usuario);
-                out.write('\0'); // inserta el código ASCII 0 al final
-            }
+		    // se crea el socket del cliente
+		    Socket sc = new Socket(_server, _port);
+		    String mensaje = "LIST_CONTENT";
+		    DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+		    DataInputStream in = new DataInputStream(sc.getInputStream());
+		
+		    out.writeBytes(mensaje);
+		    out.write('\0'); // inserta el código ASCII 0 al final
+		    
+		    if(mensaje.equals("LIST_CONTENT")==true){
+			out.writeBytes(usuario);
+			out.write('\0'); // inserta el código ASCII 0 al final
+		    }
 
-            out.writeBytes(user_name);
-            out.write('\0'); // 
+		    out.writeBytes(user_name);
+		    out.write('\0'); // 
 
-            byte[] ch = new byte[1];
-            String mensajeR = new String();
-            do{
-                ch[0] = in.readByte();
-                if (ch[0] != '\0'){
-                    String d = new String(ch);
-                    mensajeR = mensajeR + d;
-                }
-            } while(ch[0] != '\0');
+		    //Leemos la respuesta del servidor
+		    String mensajeR = read(in);
 
-            //Se pasa a int el byte de respuesta
-            int conectados = Integer.parseInt(mensajeR);
-            
-            if(conectados == 0) {
-                mensajeR = new String();
-                do{
-                    ch[0] = in.readByte();
-                    if (ch[0] != '\0'){
-                        String d = new String(ch);
-                        mensajeR = mensajeR + d;
-                    }
-                } while(ch[0] != '\0');
-                conectados = Integer.parseInt(mensajeR);
-                //System.out.println(conectados);
-                if (conectados == -1){
-                    res = 3;
-                } else  {
-                    int contador= conectados;
-                    while(contador>0){
-                    
-                     mensajeR = new String();
-                    do{
-                        ch[0] = in.readByte();
-                        if (ch[0] != '\0'){
-                            String d = new String(ch);
-                            mensajeR = mensajeR + d;
-                            
-                        }
-                    } while(ch[0] != '\0');
-                    contador--;
-                    System.out.println(mensajeR);
-                    }
-                }
-            }
+		    //Se pasa a int el byte de respuesta
+		    int conectados = Integer.parseInt(mensajeR);
+		    
+		    if(conectados == 0) {
+			mensajeR = new String();
+			//Leemos la respuesta del servidor
+			mensajeR = read(in);
 
-        }//fin del try
+			conectados = Integer.parseInt(mensajeR);
+			//System.out.println(conectados);
+			if (conectados == -1){
+			    res = 3;
+			} else  {
+			    System.out.println("c> LIST_CONTENT OK");
+			    int contador= conectados;
+			    while(contador>0){
+			    
+				    mensajeR = new String();
+				    //Leemos la respuesta del servidor
+				    mensajeR = read(in);
 
-        catch (Exception e)
-        {
-            System.err.println("excepcion " + e.toString() );
-            e.printStackTrace();
-        }
-		return 0;
+				    contador--;
+				    System.out.println(mensajeR);
+			    }
+			}
+		    }
+
+		}//fin del try
+
+		catch (Exception e)
+		{
+		    System.err.println("excepcion " + e.toString() );
+		    e.printStackTrace();
+		}
+	}
+	if(res == 0){
+	    System.out.println("c> LIST_CONTENT OK");
+	} else if(res == 1){
+	    System.out.println("c> LIST_CONTENT FAIL, USER DOES NOT EXIST");
+	} else if(res == 2){
+	    System.out.println("c> LIST_CONTENT FAIL, USER NOT CONNECTED");
+	} else if(res == 3){
+	    System.out.println("c> LIST_CONTETN FAIL, REMOTE USER DOES NOT EXIST");
+	}else{
+	    System.out.println("c> LIST_USERS FAIL");
+	}
+	return res;
 	}
 
 	 /**
@@ -773,81 +750,82 @@ class client {
 	static int get_file(String user_name, String remote_file_name, String local_file_name)
 	{
         int res = 3;
-        try{
-            //Comprobamos si hay usuarios conectados
-            if(usuariosConectados.isEmpty()) {
-                System.out.println("c> GET_FILE FAIL");
-                return 2;
-            }
-            else{
-                int contador = 0;
-                while(contador < usuariosConectados.size()){
-                    if(usuariosConectados.get(contador).name.equals(user_name)) {
-                        break;
-                    } else {
-                        contador++;
-                    }
-                }
-                //Si no encuentra al usuario devuelve 2 e imprime el siguiente error
-                if(contador == usuariosConectados.size()) {
-                    System.out.println("c> GET_FILE FAIL");
-                    return 2;
-                }
+	
+	if(usuario == null){//usuario no conectado
+		System.out.println("Usuario no conectado");
+		res = 2;
+	}
+	else{
+		System.out.println("Let's try");
+		try{
+			int contador = 0;
+			System.out.println("Users connected: " + usuariosConectados.size());
+			while(contador < usuariosConectados.size()){
+			    if(usuariosConectados.get(contador).name.equals(user_name)) {
+				break;
+			    } else {
+				System.out.println("contador: " + contador);
+				contador++;
+			    }
+			}
+			System.out.println("Hemos superado el while");
+			//Si no encuentra al usuario devuelve 2 e imprime el siguiente error
+			if(contador == usuariosConectados.size()) {
+				System.out.println("User?");
+			    System.out.println("c> GET_FILE FAIL");
+			    return 2;
+			}
 
-                //almacenamos la ip y el puerto del usuario encontrado
-                String ip = usuariosConectados.get(contador).ip;
-                int port = usuariosConectados.get(contador).port;
-                
-                //creacion del socket
-                Socket sc = new Socket(ip, port);
-                
-                
-                DataOutputStream out = new DataOutputStream(sc.getOutputStream());
-                DataInputStream in = new DataInputStream(sc.getInputStream());
-                
-                System.out.println("Enviamos el GET_FILE");
-                String mensaje = "GET_FILE";
-                out.writeBytes(mensaje);
-                out.write('\0'); // inserta el código ASCII 0 al final
-            
-                System.out.println("Enviamos el nombre del fichero remoto");
-                if(mensaje.equals("GET_FILE")==true){
-                    out.writeBytes(remote_file_name);
-                    out.write('\0'); // inserta el código ASCII 0 al final
-                }
-                System.out.println(remote_file_name);
-                
-                System.out.println("Recibimos la respuesta");
-                byte[] ch = new byte[1];
-                String mensajeR = new String();
-                do{
-                    ch[0] = in.readByte();
-                    if (ch[0] != '\0'){
-                        String d = new String(ch);
-                        mensajeR = mensajeR + d;
-                    }
-                } while(ch[0] != '\0');
+			//almacenamos la ip y el puerto del usuario encontrado
+			System.out.println("Usuario encontrado\n");
+			String ip = usuariosConectados.get(contador).ip;
+			int port = usuariosConectados.get(contador).port;
+			
+			//creacion del socket
+			Socket sc = new Socket(ip, port);
+			
+			
+			DataOutputStream out = new DataOutputStream(sc.getOutputStream());
+			DataInputStream in = new DataInputStream(sc.getInputStream());
+			
+			System.out.println("Enviamos el GET_FILE");
+			String mensaje = "GET_FILE";
+			out.writeBytes(mensaje);
+			out.write('\0'); // inserta el código ASCII 0 al final
+		    
+			System.out.println("Enviamos el nombre del fichero remoto");
+			if(mensaje.equals("GET_FILE")==true){
+			    out.writeBytes(remote_file_name);
+			    out.write('\0'); // inserta el código ASCII 0 al final
+			}
+			System.out.println(remote_file_name);
+			
+			System.out.println("Recibimos la respuesta");
+			//Leemos la respuesta del servidor
+			String mensajeR = read(in);
 
-                //Se pasa a int
-                res = Integer.parseInt(mensajeR);
-                
-                //si el resultado es 0, copiamos el fichero remoto del socket al fichero local
-                if(res == 0){
-                    // abrimos un file para escribir
-                    OutputStream outFile = new FileOutputStream(local_file_name);
-                    DataOutputStream outputfile = new DataOutputStream(outFile);
-                    // leemos del socket y escribimos en el file
-                    copy.copyFile(in, outputfile);
-                    //cerramos el fichero 
-                    outputfile.close();
-                }                
-            }
-            
-        }
-        catch(Exception e){
-            System.err.println("excepcion " + e.toString());
-            res = 2;
-        }
+			//Se pasa a int
+			System.out.println("Creo que peta quí");
+			res = Integer.parseInt(mensajeR);
+			System.out.println("Me equivocaba, res = " + res);
+			//si el resultado es 0, copiamos el fichero remoto del socket al fichero local
+			if(res == 0){
+			    // abrimos un file para escribir
+			    OutputStream outFile = new FileOutputStream(local_file_name);
+			    DataOutputStream outputfile = new DataOutputStream(outFile);
+			    // leemos del socket y escribimos en el file
+			    copy.copyFile(in, outputfile);
+			    //cerramos el fichero 
+			    outputfile.close();
+			}                
+		    }
+		    
+		catch(Exception e){
+		    System.err.println("excepcion " + e.toString());
+		    res = 2;
+		}
+	}
+
         if(res == 0){
             System.out.println("c> GET_FILE OK");
         } else if(res == 1){

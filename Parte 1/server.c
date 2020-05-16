@@ -99,7 +99,8 @@ void tratar_peticion (int *s) {
 		    break;
 		}
 		
-		int conclusion = conectar(user, s_local, inputBuff);
+	int conclusion = conectar(user, s_local, inputBuff);
+	printf("res = %d\n",conclusion);
         char resultado[2];
         sprintf(resultado, "%d", conclusion);
         if(enviar(s_local, resultado, strlen(resultado)+1) < 0){

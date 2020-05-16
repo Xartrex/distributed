@@ -68,18 +68,21 @@ int baja(char *patata) {
 
 int conectar(char *usuario, int s_local, char *puerto) {
     struct stat st = {0};
-    //crear directorio raiz
+    //crear directorio raiz si no esta creado
     if (stat("./ficheros", &st) == -1) {
         mkdir("./ficheros", 0777);
         return 1; //el usuario no existe
     }
-    //crear directorio de usuarios conectados
+    //crear directorio de usuarios conectados si no esta creado
     if (stat("./ficheros/usuarios conectados", &st) == -1) {
         mkdir("./ficheros/usuarios conectados", 0777);
     }
 
+
     char patata[256];
     sprintf(patata,"./ficheros/usuarios/%s", usuario);
+
+
 
 
     // ./ficheros/Usuaro1 si no existe es que no esta registrado
@@ -117,9 +120,18 @@ int conectar(char *usuario, int s_local, char *puerto) {
 }
 
 int publicar(char *descripcion, char *nombre, char *usuario){
+
+    if(usuario == NULL){//usuario no conectado
+    	return 2;
+    }	
     //coger ruta del fichero
     char fichero[256];
     sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario, nombre);
+
+    struct stat st = {0};
+    if (stat(fichero, &st) == 0) {//el fichero ya está publicado
+        return 3;
+    }
     printf("Print del Gficheros: %s\n", usuario);
     FILE *fd;
     fd = fopen(fichero, "w+");
@@ -133,6 +145,11 @@ int borrar(char *nombre, char *usuario){
     //coger ruta del fichero
     char fichero[256];
     sprintf(fichero,"./ficheros/usuarios/%s/%s", usuario, nombre);
+
+    struct stat st = {0};
+    if (stat(fichero, &st) == -1) {
+        return 2;
+    }
     printf(fichero);
 
     remove(fichero);
@@ -145,6 +162,10 @@ int desconectar(char *usuario){
     char fichero[256];
     sprintf(fichero,"./ficheros/usuarios conectados/%s", usuario);
 
+    struct stat st = {0};
+    if (stat(fichero, &st) == -1) {
+        return 3;
+    }
     remove(fichero);
     
     return 0;
