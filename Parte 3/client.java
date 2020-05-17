@@ -436,11 +436,12 @@ class client {
                     out.write('\0'); // inserta el código ASCII 0 al final
 
                     //Se llama al servicio web para pasar la cadena descripción a mayúsculas
-                    URL url = new URL("http://localhost:8888/Mayus");
+                    URL url = new URL("http://localhost:8888/Mayus?wsdl");
                     MayusServiceService service = new MayusServiceService(url);
-                    MayusService port = service.getMayusServicePort();
+                    MayusService portService = service.getMayusServicePort();
 
-                    String descripcionMAYUS = port.toUpper(description);
+                    String descripcionMAYUS;
+                    descripcionMAYUS = portService.toUpper(description);
                     
                     System.out.println(description);
                     System.out.println(descripcionMAYUS);
