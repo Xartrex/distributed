@@ -437,12 +437,15 @@ class client {
 
                     //Se llama al servicio web para pasar la cadena descripción a mayúsculas
                     URL url = new URL("http://localhost:8888/Mayus");
-                    MayusServiceServiceservice = new MayusServiceService(url);
-                    MayusServiceport = service.getMayusServicePort();
+                    MayusServiceService service = new MayusServiceService(url);
+                    MayusService port = service.getMayusServicePort();
 
                     String descripcionMAYUS = port.toUpper(description);
-
-                    out.writeBytes(descriptionMAYUS);
+                    
+                    System.out.println(description);
+                    System.out.println(descripcionMAYUS);
+                    
+                    out.writeBytes(descripcionMAYUS);
                     out.write('\0');
                 }
                 
