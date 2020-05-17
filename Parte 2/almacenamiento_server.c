@@ -5,7 +5,7 @@
  */
 
 #include "almacenamiento.h"
-#include "GFicheros.c"
+#include "Gficheros.h"
 
 bool_t
 registeruser_1_svc(char *usuario, int *result,  struct svc_req *rqstp)

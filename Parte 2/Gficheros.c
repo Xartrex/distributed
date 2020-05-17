@@ -11,8 +11,9 @@
 #include "lines.h"
 #include <dirent.h>
 #include <fcntl.h>
+#include "Gficheros.h"
 
-#define MAX 256
+
 
 int registro(char *patata) {
     struct stat st = {0};

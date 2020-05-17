@@ -12,7 +12,7 @@
 #include "Gficheros.c"
 #include "lines.h"
 #include <signal.h>
-#include "almacenamiento.h>
+#include "almacenamiento.h"
 
 
 //Atenderemos un máximo de 8 peticiones simultáneas para evitar saturara el servidor
@@ -27,7 +27,7 @@ int contadorT = 0;
 int sd;
 
 //RPC
-CLIENT *clienteRPC;
+CLIENT *client;
 enum clnt_stat retvalRPC;
 int resultRPC;
 char host[20];
@@ -397,7 +397,9 @@ int main(int argc, char *argv[]) {
 		print_usage(); 
 		exit(-1);
 	}
-
+    //cogemos la direccion del servidor rpc
+    strcpy(host, argv[3]);
+    
     client = clnt_create (host, fileserverRPC, fileServer, "tcp");
     if(client == NULL) {
         clnt_pcreateerror(host);
